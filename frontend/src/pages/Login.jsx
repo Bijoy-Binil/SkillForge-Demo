@@ -7,7 +7,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const { login, error, loading } = useAuth();
+  const { login, error, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,108 +18,111 @@ export default function Login() {
     }
   }, [location]);
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      navigate('/dashboard');
+    setMessage('');
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Login form error:', err);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-gray-50">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <div className="flex justify-center">
-          <AcademicCapIcon className="h-12 w-12 text-primary-600" />
-        </div>
-        <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          Sign in to SkillForge
-        </h2>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
+  <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-md">
+    <div className="flex flex-col items-center">
+      {/* Icon */}
+      <div className="mb-3">
+        <AcademicCapIcon className="h-10 w-10 text-primary-600" aria-hidden="true" />
       </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">{error}</h3>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {message && (
-          <div className="mb-4 rounded-md bg-green-50 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-800">{message}</h3>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-              Email address
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
-                Password
-              </label>
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-semibold text-primary-600 hover:text-primary-500">
-                  Forgot password?
-                </Link>
-              </div>
-            </div>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full justify-center rounded-md bg-primary-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-70"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
-        </form>
-
-        <p className="mt-10 text-center text-sm text-gray-500">
-          Not a member?{' '}
-          <Link to="/register" className="font-semibold leading-6 text-primary-600 hover:text-primary-500">
-            Create an account
-          </Link>
-        </p>
-      </div>
+      <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900">
+        Sign in to <span className="text-primary-600">SkillForge</span>
+      </h2>
     </div>
+
+    {/* Alerts */}
+    {error && (
+      <div className="rounded-md bg-red-50 p-4">
+        <p className="text-sm text-red-700">{error}</p>
+      </div>
+    )}
+    {message && (
+      <div className="rounded-md bg-green-50 p-4">
+        <p className="text-sm text-green-700">{message}</p>
+      </div>
+    )}
+
+    {/* Form */}
+    <form className="space-y-6" onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Email address
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+        />
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <div className="text-sm">
+            <Link to="/forgot-password" className="text-primary-600 hover:text-primary-500 font-medium">
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+        />
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-70"
+        >
+          {loading ? 'Signing in...' : 'Sign in'}
+        </button>
+      </div>
+    </form>
+
+    <p className="mt-6 text-center text-sm text-gray-500">
+      Not a member?{' '}
+      <Link to="/register" className="font-semibold text-primary-600 hover:text-primary-500">
+        Create an account
+      </Link>
+    </p>
+  </div>
+</div>
+
   );
 } 

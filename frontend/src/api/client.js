@@ -13,7 +13,7 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `JWT ${token}`;
     }
     return config;
   },
@@ -43,7 +43,7 @@ apiClient.interceptors.response.use(
           
           if (response.data.access) {
             localStorage.setItem('authToken', response.data.access);
-            originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+            originalRequest.headers.Authorization = `JWT ${response.data.access}`;
             return apiClient(originalRequest);
           }
         }

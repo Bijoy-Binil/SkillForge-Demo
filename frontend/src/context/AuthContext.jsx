@@ -38,15 +38,23 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       await authService.login(email, password);
-      const userData = await authService.getCurrentUser();
-      setUser(userData);
-      navigate('/dashboard');
-      return true;
+      try {
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+        setLoading(false);
+        return true;
+      } catch (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        setError('Login successful but failed to fetch user profile. Please try again.');
+        authService.logout();
+        setLoading(false);
+        return false;
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
-      return false;
-    } finally {
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed. Please check your credentials.');
       setLoading(false);
+      return false;
     }
   };
 
@@ -59,11 +67,7 @@ export const AuthProvider = ({ children }) => {
       navigate('/login', { state: { message: 'Registration successful! Please log in.' } });
       return true;
     } catch (err) {
-      setError(
-        err.response?.data?.email?.[0] ||
-        err.response?.data?.password?.[0] ||
-        'Registration failed. Please try again.'
-      );
+      setError(err.message || 'Registration failed. Please try again.');
       return false;
     } finally {
       setLoading(false);

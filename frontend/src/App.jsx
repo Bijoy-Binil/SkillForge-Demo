@@ -10,11 +10,36 @@ import Register from './pages/Register';
 import LearningPaths from './pages/LearningPaths';
 import LearningPathDetail from './pages/LearningPathDetail';
 
+// Test component to verify CSS
+function CssTest() {
+  return (
+    <div style={{ padding: '40px' }}>
+      <h1>CSS Test Page</h1>
+      <div className="test-box">
+        If you can see this box in blue color with white text, CSS is working!
+      </div>
+      <div style={{ marginTop: '20px' }}>
+        <button className="btn btn-primary">Primary Button</button>
+        <button className="btn btn-secondary" style={{ marginLeft: '10px' }}>Secondary Button</button>
+        <button className="btn btn-danger" style={{ marginLeft: '10px' }}>Danger Button</button>
+        <button className="btn btn-success" style={{ marginLeft: '10px' }}>Success Button</button>
+      </div>
+      <div className="card" style={{ marginTop: '20px', maxWidth: '500px' }}>
+        <h3>Card Component</h3>
+        <p>This is a card component with hover effects.</p>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Test route */}
+          <Route path="/test-css" element={<CssTest />} />
+          
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
