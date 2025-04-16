@@ -7,32 +7,27 @@ from .views import (
     LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet,
     ProgressViewSet, ProgressStatsView, LearningTimeStatsView, ResumeBuilderView,
     AdminLearningPathViewSet, AdminLearningModuleViewSet, AdminUserViewSet,
-    AdminMetricsView
+    AdminMetricsView, JobViewSet, JobMatchView, JobAPIView, AdminUserListView,
+    AdminLearningPathView, AdminLearningModuleView
 )
 
 router = DefaultRouter()
-router.register('users', UserViewSet)
-router.register('skills', SkillViewSet)
-router.register('learning-paths', LearningPathViewSet)
-router.register('progress', ProgressTrackerViewSet, basename='progress')
-router.register('jobs', JobMatchViewSet)
-router.register('resume', ResumeDataViewSet, basename='resume')
-router.register('github/profiles', GithubProfileViewSet)
-router.register('github/repositories', GithubRepositoryViewSet)
-router.register('github/languages', GithubLanguageViewSet)
-router.register('modules', LearningModuleViewSet, basename='modules')
-router.register('module-progress', ModuleProgressViewSet, basename='module-progress')
-router.register('learning-sessions', LearningSessionViewSet, basename='learning-sessions')
-router.register(r'progress', ProgressViewSet, basename='progress')
-router.register(r'learning-sessions', LearningSessionViewSet, basename='learning-sessions')
-router.register('admin/learning-paths', AdminLearningPathViewSet, basename='admin-learning-paths')
-router.register('admin/learning-modules', AdminLearningModuleViewSet, basename='admin-learning-modules')
-router.register('admin/users', AdminUserViewSet, basename='admin-users')
+router.register(r'users', UserViewSet)
+router.register(r'skills', SkillViewSet)
+router.register(r'learning-paths', LearningPathViewSet)
+router.register(r'learning-modules', LearningModuleViewSet)
+router.register(r'progress', ProgressViewSet)
+router.register(r'resume', ResumeViewSet, basename='resume')
+router.register(r'github', GithubViewSet, basename='github')
+router.register(r'jobs', JobViewSet, basename='jobs')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('progress/stats/', ProgressStatsView.as_view(), name='progress-stats'),
-    path('progress/time-stats/', LearningTimeStatsView.as_view(), name='learning-time-stats'),
-    path('resume/generate/', ResumeBuilderView.as_view(), name='resume-generate'),
+    path('auth/', include('rest_framework.urls')),
     path('admin/metrics/', AdminMetricsView.as_view(), name='admin-metrics'),
+    path('admin/users/', AdminUserListView.as_view(), name='admin-users'),
+    path('admin/learning-paths/', AdminLearningPathView.as_view(), name='admin-learning-paths'),
+    path('admin/learning-modules/', AdminLearningModuleView.as_view(), name='admin-learning-modules'),
+    path('jobs/<int:job_id>/match/', JobMatchView.as_view(), name='job-match'),
+    path('admin/jobs/import/', JobAPIView.as_view(), name='job-import'),
 ] 

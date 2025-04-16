@@ -10,7 +10,7 @@ import json
 from .models import (
     User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
     GithubProfile, GithubRepository, GithubLanguage, LearningModule,
-    ModuleProgress, LearningSession
+    ModuleProgress, LearningSession, Job
 )
 from .serializers import (
     UserSerializer, SkillSerializer, LearningPathSerializer, 
@@ -19,7 +19,7 @@ from .serializers import (
     LearningModuleSerializer, ModuleProgressSerializer, LearningSessionSerializer,
     ModuleProgressSummarySerializer, LearningTimeStatsSerializer, ResumeBuilderSerializer,
     AdminLearningPathSerializer, AdminLearningModuleSerializer, AdminUserSerializer,
-    AdminUserMetricsSerializer
+    AdminUserMetricsSerializer, JobSerializer
 )
 from .openai_service import OpenAIService
 from rest_framework import status
@@ -798,3 +798,162 @@ class AdminMetricsView(APIView):
                 completed_at__gte=month_ago
             ).count()
         }
+
+class JobViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for job listings."""
+    serializer_class = JobSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'company', 'description', 'location']
+    ordering_fields = ['posted_at', 'match_percentage']
+    ordering = ['-match_percentage', '-posted_at']
+
+    def get_queryset(self):
+        queryset = Job.objects.filter(is_active=True)
+        
+        # Filter by experience level
+        experience_level = self.request.query_params.get('experience_level')
+        if experience_level:
+            queryset = queryset.filter(experience_level=experience_level)
+        
+        # Filter by location
+        location = self.request.query_params.get('location')
+        if location:
+            queryset = queryset.filter(location__icontains=location)
+        
+        # Filter by minimum match percentage
+        min_match = self.request.query_params.get('min_match')
+        if min_match:
+            queryset = [job for job in queryset 
+                       if job.calculate_match_percentage(self.request.user) >= float(min_match)]
+        
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+class JobMatchView(APIView):
+    """View for job matching and recommendations."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, job_id):
+        try:
+            job = Job.objects.get(id=job_id)
+            user = request.user
+            
+            # Get matching and missing skills
+            user_skills = set(user.skills.all())
+            job_skills = set(job.skills_required.all())
+            matching_skills = user_skills.intersection(job_skills)
+            missing_skills = job_skills.difference(user_skills)
+            
+            # Get recommended learning paths
+            recommended_paths = LearningPath.objects.filter(
+                skills__in=missing_skills
+            ).distinct()[:3]
+            
+            # Calculate match percentage
+            match_percentage = job.calculate_match_percentage(user)
+            
+            data = {
+                'job': job,
+                'match_percentage': match_percentage,
+                'matching_skills': matching_skills,
+                'missing_skills': missing_skills,
+                'recommended_paths': recommended_paths
+            }
+            
+            serializer = JobMatchSerializer(data)
+            return Response(serializer.data)
+            
+        except Job.DoesNotExist:
+            return Response(
+                {"error": "Job not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class JobAPIView(APIView):
+    """View for fetching jobs from external APIs."""
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        source = request.data.get('source', 'jsearch')
+        
+        try:
+            if source == 'jsearch':
+                jobs = self._fetch_jsearch_jobs()
+            elif source == 'remotive':
+                jobs = self._fetch_remotive_jobs()
+            else:
+                return Response(
+                    {"error": "Invalid job source"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Save jobs to database
+            saved_jobs = []
+            for job_data in jobs:
+                job, created = Job.objects.update_or_create(
+                    title=job_data['title'],
+                    company=job_data['company'],
+                    defaults={
+                        'description': job_data['description'],
+                        'location': job_data['location'],
+                        'experience_level': job_data.get('experience_level', 'Not specified'),
+                        'salary_range': job_data.get('salary_range', ''),
+                        'application_url': job_data['application_url'],
+                        'posted_at': job_data['posted_at'],
+                        'source': source
+                    }
+                )
+                if created:
+                    saved_jobs.append(job)
+            
+            return Response({
+                "message": f"Successfully imported {len(saved_jobs)} jobs",
+                "jobs": JobSerializer(saved_jobs, many=True).data
+            })
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def _fetch_jsearch_jobs(self):
+        """Fetch jobs from JSearch API."""
+        # Implement JSearch API integration
+        # This is a mock implementation
+        return [
+            {
+                'title': 'Senior Python Developer',
+                'company': 'Tech Corp',
+                'description': 'Looking for experienced Python developers...',
+                'location': 'Remote',
+                'experience_level': 'Senior',
+                'salary_range': '$100k - $150k',
+                'application_url': 'https://example.com/job/1',
+                'posted_at': timezone.now()
+            }
+            # Add more mock jobs
+        ]
+
+    def _fetch_remotive_jobs(self):
+        """Fetch jobs from Remotive API."""
+        # Implement Remotive API integration
+        # This is a mock implementation
+        return [
+            {
+                'title': 'Full Stack Developer',
+                'company': 'Remote Inc',
+                'description': 'Seeking full stack developers...',
+                'location': 'Remote',
+                'experience_level': 'Mid-level',
+                'salary_range': '$80k - $120k',
+                'application_url': 'https://example.com/job/2',
+                'posted_at': timezone.now()
+            }
+            # Add more mock jobs
+        ]

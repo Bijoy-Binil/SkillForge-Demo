@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import (
     User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
     GithubRepository, GithubLanguage, GithubProfile, LearningModule, 
-    ModuleProgress, LearningSession, Progress
+    ModuleProgress, LearningSession, Progress, Job
 )
 
 
@@ -69,14 +69,32 @@ class ProgressTrackerSerializer(serializers.ModelSerializer):
                   'progress_percentage', 'started_at', 'last_activity', 'completed', 'completed_at']
 
 
-class JobMatchSerializer(serializers.ModelSerializer):
-    skills_required_details = SkillSerializer(source='skills_required', many=True, read_only=True)
+class JobSerializer(serializers.ModelSerializer):
+    """Serializer for job listings."""
+    skills_required = SkillSerializer(many=True, read_only=True)
+    match_percentage = serializers.SerializerMethodField()
     
     class Meta:
-        model = JobMatch
-        fields = ['id', 'title', 'company', 'description', 'location', 'skills_required',
-                  'skills_required_details', 'experience_level', 'salary_range', 
-                  'application_url', 'posted_at', 'created_at']
+        model = Job
+        fields = ['id', 'title', 'company', 'description', 'location', 
+                 'skills_required', 'experience_level', 'salary_range',
+                 'application_url', 'posted_at', 'match_percentage']
+        read_only_fields = ['id', 'posted_at', 'match_percentage']
+    
+    def get_match_percentage(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.calculate_match_percentage(request.user)
+        return 0
+
+
+class JobMatchSerializer(serializers.Serializer):
+    """Serializer for job matching results."""
+    job = JobSerializer()
+    match_percentage = serializers.FloatField()
+    matching_skills = SkillSerializer(many=True)
+    missing_skills = SkillSerializer(many=True)
+    recommended_paths = LearningPathSerializer(many=True)
 
 
 class ResumeDataSerializer(serializers.ModelSerializer):

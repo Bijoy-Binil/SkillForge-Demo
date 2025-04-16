@@ -287,3 +287,51 @@ class Progress(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.module.title} ({'Completed' if self.completed else 'In Progress'})"
+
+
+class Job(models.Model):
+    """Model for job listings."""
+    title = models.CharField(max_length=200)
+    company = models.CharField(max_length=100)
+    description = models.TextField()
+    location = models.CharField(max_length=100)
+    skills_required = models.ManyToManyField(Skill, related_name='jobs')
+    experience_level = models.CharField(max_length=50)
+    salary_range = models.CharField(max_length=100, blank=True)
+    application_url = models.URLField()
+    posted_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    source = models.CharField(max_length=50, default='manual')  # manual, jsearch, remotive, etc.
+
+    class Meta:
+        ordering = ['-posted_at']
+        indexes = [
+            models.Index(fields=['title', 'company']),
+            models.Index(fields=['posted_at']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} at {self.company}"
+
+    def calculate_match_percentage(self, user):
+        """Calculate match percentage based on user's skills and learning paths."""
+        user_skills = set(user.skills.all())
+        job_skills = set(self.skills_required.all())
+        
+        # Calculate skill match
+        matching_skills = user_skills.intersection(job_skills)
+        skill_match_percentage = (len(matching_skills) / len(job_skills) * 100) if job_skills else 0
+        
+        # Calculate learning path match
+        user_paths = set(LearningPath.objects.filter(users=user))
+        path_match_percentage = 0
+        if user_paths:
+            path_match_percentage = min(100, len(user_paths) * 20)  # 20% per completed path
+        
+        # Weighted average (70% skills, 30% learning paths)
+        total_match = (skill_match_percentage * 0.7) + (path_match_percentage * 0.3)
+        
+        return round(total_match, 2)
