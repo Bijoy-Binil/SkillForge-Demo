@@ -17,10 +17,12 @@ from .serializers import (
     ProgressTrackerSerializer, JobMatchSerializer, ResumeDataSerializer,
     GithubProfileSerializer, GithubRepositorySerializer, GithubLanguageSerializer,
     LearningModuleSerializer, ModuleProgressSerializer, LearningSessionSerializer,
-    ModuleProgressSummarySerializer, LearningTimeStatsSerializer
+    ModuleProgressSummarySerializer, LearningTimeStatsSerializer, ResumeBuilderSerializer
 )
 from .openai_service import OpenAIService
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
@@ -527,3 +529,162 @@ class LearningSessionViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Only allow users to see their own learning sessions."""
         return LearningSession.objects.filter(user=self.request.user).order_by('-date')
+
+
+class ProgressViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing progress tracking."""
+    serializer_class = ProgressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Progress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ProgressStatsView(APIView):
+    """View for getting progress statistics."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        total_modules = LearningModule.objects.count()
+        completed_modules = Progress.objects.filter(
+            user=user, completed=True
+        ).count()
+        total_time_spent = Progress.objects.filter(
+            user=user
+        ).aggregate(total=Sum('time_spent_minutes'))['total'] or 0
+        completion_percentage = (
+            (completed_modules / total_modules * 100) if total_modules > 0 else 0
+        )
+
+        stats = {
+            'total_modules': total_modules,
+            'completed_modules': completed_modules,
+            'total_time_spent': total_time_spent,
+            'completion_percentage': completion_percentage
+        }
+
+        serializer = ProgressStatsSerializer(stats)
+        return Response(serializer.data)
+
+
+class LearningTimeStatsView(APIView):
+    """View for getting learning time statistics."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        time_period = request.query_params.get('period', 'week')
+        
+        if time_period == 'week':
+            start_date = timezone.now() - timezone.timedelta(days=7)
+        else:  # default to day
+            start_date = timezone.now() - timezone.timedelta(days=1)
+
+        progress_data = Progress.objects.filter(
+            user=user,
+            created_at__gte=start_date
+        ).values('created_at__date').annotate(
+            minutes=Sum('time_spent_minutes'),
+            module_count=Count('module', distinct=True)
+        ).order_by('created_at__date')
+
+        serializer = LearningTimeStatsSerializer(progress_data, many=True)
+        return Response(serializer.data)
+
+
+class ResumeBuilderView(APIView):
+    """View for generating AI-powered resumes."""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get user data for resume generation."""
+        user = request.user
+        
+        # Collect all relevant data
+        data = {
+            'user': user,
+            'skills': Skill.objects.filter(users=user),
+            'learning_paths': LearningPath.objects.filter(users=user),
+            'github_repositories': GithubRepository.objects.filter(github_profile__user=user),
+            'github_languages': GithubLanguage.objects.filter(github_profile__user=user),
+            'module_progress': ModuleProgress.objects.filter(user=user)
+        }
+        
+        serializer = ResumeBuilderSerializer(data)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        """Generate resume using OpenAI."""
+        user = request.user
+        
+        # Collect data
+        data = {
+            'user': user,
+            'skills': Skill.objects.filter(users=user),
+            'learning_paths': LearningPath.objects.filter(users=user),
+            'github_repositories': GithubRepository.objects.filter(github_profile__user=user),
+            'github_languages': GithubLanguage.objects.filter(github_profile__user=user),
+            'module_progress': ModuleProgress.objects.filter(user=user)
+        }
+        
+        serializer = ResumeBuilderSerializer(data)
+        resume_data = serializer.data
+        
+        try:
+            # Generate resume using OpenAI
+            prompt = f"""
+            Create a professional resume based on the following data:
+            
+            User Information:
+            - Name: {resume_data['user']['name']}
+            - Email: {resume_data['user']['email']}
+            - Bio: {resume_data['user']['bio']}
+            - GitHub: {resume_data['user']['github_username']}
+            
+            Skills:
+            {', '.join([f"{skill['name']} ({skill['category']})" for skill in resume_data['skills']])}
+            
+            Learning Paths:
+            {chr(10).join([f"- {path['title']}: {path['completed_modules']}/{path['total_modules']} modules completed" 
+                          for path in resume_data['learning_paths']])}
+            
+            Projects:
+            {chr(10).join([f"- {project['name']}: {project['description']} ({project['primary_language']})" 
+                          for project in resume_data['projects']])}
+            
+            Programming Languages:
+            {', '.join([f"{lang['name']} ({lang['percentage']}%)" for lang in resume_data['languages']])}
+            
+            Format the resume in HTML with the following sections:
+            1. Header (Name, Contact Info)
+            2. Summary
+            3. Skills
+            4. Education & Learning
+            5. Projects
+            6. Technical Skills
+            
+            Use professional formatting and styling.
+            """
+            
+            response = OpenAIService.generate_resume(prompt)
+            
+            if 'error' in response:
+                return Response(
+                    {"error": "Failed to generate resume"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response({
+                'resume_html': response['resume'],
+                'raw_data': resume_data
+            })
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

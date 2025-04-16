@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import (
     User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
     GithubRepository, GithubLanguage, GithubProfile, LearningModule, 
-    ModuleProgress, LearningSession
+    ModuleProgress, LearningSession, Progress
 )
 
 
@@ -159,9 +159,127 @@ class ModuleProgressSummarySerializer(serializers.Serializer):
     completion_percentage = serializers.FloatField()
 
 
-class LearningTimeStatsSerializer(serializers.Serializer):
-    """Serializer for learning time statistics by day/week."""
+class ProgressSerializer(serializers.ModelSerializer):
+    """Serializer for progress tracking."""
+    module_details = LearningModuleSerializer(source='module', read_only=True)
     
+    class Meta:
+        model = Progress
+        fields = ['id', 'user', 'module', 'module_details', 'completed', 
+                 'time_spent_minutes', 'completed_at', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ProgressStatsSerializer(serializers.Serializer):
+    """Serializer for progress statistics."""
+    total_modules = serializers.IntegerField()
+    completed_modules = serializers.IntegerField()
+    total_time_spent = serializers.IntegerField()
+    completion_percentage = serializers.FloatField()
+
+
+class LearningTimeStatsSerializer(serializers.Serializer):
+    """Serializer for learning time statistics."""
     date = serializers.DateField()
     minutes = serializers.IntegerField()
-    module_count = serializers.IntegerField() 
+    module_count = serializers.IntegerField()
+
+
+class ResumeBuilderSerializer(serializers.Serializer):
+    """Serializer for collecting data for AI resume generation."""
+    user = UserSerializer(read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    learning_paths = LearningPathSerializer(many=True, read_only=True)
+    github_repositories = GithubRepositorySerializer(many=True, read_only=True)
+    github_languages = GithubLanguageSerializer(many=True, read_only=True)
+    module_progress = ModuleProgressSerializer(many=True, read_only=True)
+
+    def to_representation(self, instance):
+        """Format data for AI resume generation."""
+        data = super().to_representation(instance)
+        
+        # Extract relevant information
+        user_data = {
+            'name': f"{data['user']['first_name']} {data['user']['last_name']}",
+            'email': data['user']['email'],
+            'bio': data['user']['bio'],
+            'github_username': data['user']['github_username']
+        }
+        
+        # Format skills
+        skills_data = [{
+            'name': skill['name'],
+            'category': skill['category'],
+            'level': skill['difficulty_level']
+        } for skill in data['skills']]
+        
+        # Format learning paths
+        learning_paths_data = [{
+            'title': path['title'],
+            'description': path['description'],
+            'completed_modules': len([m for m in data['module_progress'] 
+                                    if m['is_completed'] and m['module']['learning_path'] == path['id']]),
+            'total_modules': len([m for m in data['module_progress'] 
+                                if m['module']['learning_path'] == path['id']])
+        } for path in data['learning_paths']]
+        
+        # Format GitHub projects
+        projects_data = [{
+            'name': repo['name'],
+            'description': repo['description'],
+            'primary_language': repo['primary_language'],
+            'stars': repo['stargazers_count'],
+            'forks': repo['forks_count']
+        } for repo in data['github_repositories']]
+        
+        # Format programming languages
+        languages_data = [{
+            'name': lang['name'],
+            'percentage': lang['percentage']
+        } for lang in data['github_languages']]
+        
+        return {
+            'user': user_data,
+            'skills': skills_data,
+            'learning_paths': learning_paths_data,
+            'projects': projects_data,
+            'languages': languages_data
+        }
+
+
+class AdminLearningModuleSerializer(serializers.ModelSerializer):
+    """Admin serializer for learning modules with additional fields."""
+    class Meta:
+        model = LearningModule
+        fields = '__all__'
+        read_only_fields = ['created_at']
+
+
+class AdminLearningPathSerializer(serializers.ModelSerializer):
+    """Admin serializer for learning paths with additional fields."""
+    modules = AdminLearningModuleSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = LearningPath
+        fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at']
+
+
+class AdminUserMetricsSerializer(serializers.Serializer):
+    """Serializer for user metrics in admin panel."""
+    total_users = serializers.IntegerField()
+    active_users = serializers.IntegerField()
+    total_learning_paths = serializers.IntegerField()
+    completed_paths = serializers.IntegerField()
+    average_completion_time = serializers.FloatField()
+    popular_skills = serializers.ListField(child=serializers.CharField())
+    user_activity = serializers.DictField()
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Admin serializer for user management."""
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_active', 
+                 'is_staff', 'date_joined', 'last_login', 'github_username']
+        read_only_fields = ['id', 'date_joined', 'last_login'] 

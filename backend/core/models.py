@@ -269,3 +269,21 @@ class LearningSession(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - {self.module.title} - {self.date} ({self.duration_minutes} min)"
+
+
+class Progress(models.Model):
+    """Track user progress through learning modules."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='progress')
+    module = models.ForeignKey(LearningModule, on_delete=models.CASCADE, related_name='progress')
+    completed = models.BooleanField(default=False)
+    time_spent_minutes = models.IntegerField(default=0)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'module']
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.module.title} ({'Completed' if self.completed else 'In Progress'})"

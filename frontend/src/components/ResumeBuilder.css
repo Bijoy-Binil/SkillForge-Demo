@@ -1,0 +1,106 @@
+.resume-builder {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.resume-preview {
+    background: white;
+    padding: 30px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Resume styling */
+.resume-preview h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.resume-preview h2 {
+    color: #2c3e50;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.resume-preview p {
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.resume-preview ul {
+    margin-bottom: 15px;
+}
+
+.resume-preview li {
+    margin-bottom: 5px;
+}
+
+/* Contact information */
+.resume-preview .contact-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.resume-preview .contact-info span {
+    color: #666;
+}
+
+/* Skills section */
+.resume-preview .skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.resume-preview .skill-tag {
+    background: #e8f4f8;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+/* Projects section */
+.resume-preview .project {
+    margin-bottom: 15px;
+}
+
+.resume-preview .project-title {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.resume-preview .project-description {
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* Print styles */
+@media print {
+    .resume-preview {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .resume-preview h1 {
+        color: black;
+        border-bottom: 2px solid black;
+    }
+    
+    .resume-preview h2 {
+        color: black;
+    }
+    
+    .resume-preview .contact-info span {
+        color: black;
+    }
+    
+    .resume-preview .project-description {
+        color: black;
+    }
+} 

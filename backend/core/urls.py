@@ -4,7 +4,8 @@ from .views import (
     UserViewSet, SkillViewSet, LearningPathViewSet, 
     ProgressTrackerViewSet, JobMatchViewSet, ResumeDataViewSet,
     GithubProfileViewSet, GithubRepositoryViewSet, GithubLanguageViewSet,
-    LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet
+    LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet,
+    ProgressViewSet, ProgressStatsView, LearningTimeStatsView, ResumeBuilderView
 )
 
 router = DefaultRouter()
@@ -20,7 +21,12 @@ router.register('github/languages', GithubLanguageViewSet)
 router.register('modules', LearningModuleViewSet, basename='modules')
 router.register('module-progress', ModuleProgressViewSet, basename='module-progress')
 router.register('learning-sessions', LearningSessionViewSet, basename='learning-sessions')
+router.register(r'progress', ProgressViewSet, basename='progress')
+router.register(r'learning-sessions', LearningSessionViewSet, basename='learning-sessions')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('progress/stats/', ProgressStatsView.as_view(), name='progress-stats'),
+    path('progress/time-stats/', LearningTimeStatsView.as_view(), name='learning-time-stats'),
+    path('resume/generate/', ResumeBuilderView.as_view(), name='resume-generate'),
 ] 
