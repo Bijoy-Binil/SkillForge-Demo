@@ -8,5 +8,10 @@ export default defineConfig({
     loader: 'jsx',
     include: /\.[jt]sx?$/,
     exclude: [],
+  },
+  css: {
+    postcss: {
+      plugins: [],
+    },
   }
 })
