@@ -13,7 +13,7 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
-      config.headers.Authorization = `JWT ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -35,13 +35,27 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        // Here you would normally call the token refresh endpoint
-        // For demo purposes, we'll just log the user out
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post('http://localhost:8000/api/auth/jwt/refresh/', {
+            refresh: refreshToken
+          });
+          
+          if (response.data.access) {
+            localStorage.setItem('authToken', response.data.access);
+            originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+            return apiClient(originalRequest);
+          }
+        }
+        
+        // If refresh fails, logout
         localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(error);
       } catch (refreshError) {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
