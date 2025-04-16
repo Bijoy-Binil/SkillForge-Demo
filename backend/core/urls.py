@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, SkillViewSet, LearningPathViewSet, 
     ProgressTrackerViewSet, JobMatchViewSet, ResumeDataViewSet,
-    GithubProfileViewSet, GithubRepositoryViewSet, GithubLanguageViewSet
+    GithubProfileViewSet, GithubRepositoryViewSet, GithubLanguageViewSet,
+    LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +17,9 @@ router.register('resume', ResumeDataViewSet, basename='resume')
 router.register('github/profiles', GithubProfileViewSet)
 router.register('github/repositories', GithubRepositoryViewSet)
 router.register('github/languages', GithubLanguageViewSet)
+router.register('modules', LearningModuleViewSet, basename='modules')
+router.register('module-progress', ModuleProgressViewSet, basename='module-progress')
+router.register('learning-sessions', LearningSessionViewSet, basename='learning-sessions')
 
 urlpatterns = [
     path('', include(router.urls)),

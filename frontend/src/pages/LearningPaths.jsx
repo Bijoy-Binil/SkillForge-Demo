@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AcademicCapIcon,
@@ -6,7 +6,12 @@ import {
   ClockIcon,
   MagnifyingGlassIcon,
   PlusIcon,
+  ArrowPathIcon,
+  UserIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
+import learningService from '../api/learningService';
+import LearningPathGenerator from '../components/LearningPathGenerator';
 
 // Mock data, in a real app this would come from an API
 const mockLearningPaths = [
@@ -63,9 +68,48 @@ const mockLearningPaths = [
 ];
 
 export default function LearningPaths() {
+  const [myPaths, setMyPaths] = useState([]);
+  const [allPaths, setAllPaths] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showGenerator, setShowGenerator] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all'); // all, enrolled, created
 
+  useEffect(() => {
+    const fetchPaths = async () => {
+      setLoading(true);
+      setError('');
+      
+      try {
+        // Get paths the user is enrolled in
+        const enrolledPaths = await learningService.getMyEnrolledPaths();
+        setMyPaths(enrolledPaths);
+        
+        // Get all paths
+        const allPathsData = await learningService.getLearningPaths();
+        
+        // Filter out paths the user is already enrolled in
+        const filteredPaths = allPathsData.filter(path => 
+          !enrolledPaths.some(myPath => myPath.id === path.id)
+        );
+        
+        setAllPaths(filteredPaths);
+      } catch (err) {
+        console.error('Error fetching learning paths:', err);
+        setError('Failed to load learning paths');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPaths();
+  }, []);
+  
+  const toggleGenerator = () => {
+    setShowGenerator(!showGenerator);
+  };
+  
   const filteredPaths = mockLearningPaths.filter(path => {
     const matchesSearch = path.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          path.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -77,158 +121,143 @@ export default function LearningPaths() {
     return matchesSearch;
   });
 
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <ArrowPathIcon className="h-12 w-12 mx-auto animate-spin text-primary-600" />
+        <p className="mt-4 text-lg text-gray-600">Loading learning paths...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Learning Paths</h1>
-        <p className="mt-2 text-md text-gray-700">
-          Discover curated learning paths to help you achieve your career goals.
-        </p>
-      </div>
-
-      {/* Filters and search */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between gap-4">
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-md ${
-              filter === 'all'
-                ? 'bg-primary-100 text-primary-700 font-medium'
-                : 'bg-white text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            All Paths
-          </button>
-          <button
-            onClick={() => setFilter('enrolled')}
-            className={`px-4 py-2 rounded-md ${
-              filter === 'enrolled'
-                ? 'bg-primary-100 text-primary-700 font-medium'
-                : 'bg-white text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            Enrolled
-          </button>
-          <button
-            onClick={() => setFilter('created')}
-            className={`px-4 py-2 rounded-md ${
-              filter === 'created'
-                ? 'bg-primary-100 text-primary-700 font-medium'
-                : 'bg-white text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            Created by Me
-          </button>
-        </div>
-        <div className="flex">
-          <div className="relative rounded-md shadow-sm">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full rounded-md border-0 py-1.5 pl-10 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
-              placeholder="Search paths..."
-            />
-          </div>
-          <Link
-            to="/learning/create"
-            className="ml-4 btn btn-primary inline-flex items-center"
-          >
-            <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-            Create Path
-          </Link>
-        </div>
-      </div>
-
-      {/* Learning paths grid */}
-      {filteredPaths.length === 0 ? (
-        <div className="text-center py-12">
-          <AcademicCapIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No learning paths found</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Try adjusting your search or filters to find what you're looking for.
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Learning Paths</h1>
+          <p className="mt-2 text-md text-gray-700">
+            Track your progress through guided learning paths or discover new ones.
           </p>
-          <div className="mt-6">
-            <Link
-              to="/learning/create"
-              className="btn btn-primary inline-flex items-center"
-            >
-              <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-              Create a learning path
-            </Link>
-          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {filteredPaths.map((path) => (
-            <div
-              key={path.id}
-              className="card overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div className="flex flex-col h-full">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    <Link to={`/learning/${path.id}`} className="hover:text-primary-600">
-                      {path.title}
-                    </Link>
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">{path.description}</p>
-                  
-                  <div className="mt-3 flex items-center text-sm text-gray-500">
-                    <BookOpenIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                    <span>{path.skillCount} skills</span>
-                    <span className="mx-2">•</span>
-                    <ClockIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
-                    <span>~{path.estimatedHours} hours</span>
+        
+        <div>
+          <button
+            onClick={toggleGenerator}
+            className="btn btn-primary inline-flex items-center"
+          >
+            {showGenerator ? (
+              <>Hide Generator</>
+            ) : (
+              <>
+                <SparklesIcon className="-ml-1 mr-1 h-5 w-5" />
+                Generate with AI
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-6">
+          {error}
+        </div>
+      )}
+      
+      {showGenerator && (
+        <div className="mb-8">
+          <LearningPathGenerator />
+        </div>
+      )}
+      
+      {/* My Enrolled Paths */}
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">My Learning Paths</h2>
+        
+        {myPaths.length === 0 ? (
+          <p className="text-gray-600">
+            You haven't enrolled in any learning paths yet. Browse the available paths below or create your own.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myPaths.map(path => (
+              <Link 
+                key={path.id} 
+                to={`/learning/${path.id}`}
+                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-center mb-3">
+                  <AcademicCapIcon className="h-6 w-6 text-primary-600 mr-2" />
+                  <h3 className="text-lg font-medium text-gray-900 truncate">{path.title}</h3>
+                </div>
+                
+                <p className="text-gray-600 mb-4 line-clamp-2">{path.description}</p>
+                
+                <div className="flex items-center text-sm text-gray-500 mb-3">
+                  <ClockIcon className="h-4 w-4 mr-1" />
+                  <span>{path.estimated_hours} hours estimated</span>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
+                  <div 
+                    className="bg-primary-600 h-2.5 rounded-full" 
+                    style={{ width: `${path.progress_percentage || 0}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500">{Math.round(path.progress_percentage || 0)}% complete</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Available Paths */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Discover Learning Paths</h2>
+        
+        {allPaths.length === 0 ? (
+          <p className="text-gray-600">No additional learning paths are available at the moment.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {allPaths.map(path => (
+              <div 
+                key={path.id} 
+                className="bg-white rounded-lg border border-gray-200 p-5"
+              >
+                <div className="flex items-center mb-3">
+                  <AcademicCapIcon className="h-6 w-6 text-gray-400 mr-2" />
+                  <h3 className="text-lg font-medium text-gray-900 truncate">{path.title}</h3>
+                </div>
+                
+                <p className="text-gray-600 mb-4 line-clamp-2">{path.description}</p>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <ClockIcon className="h-4 w-4 mr-1" />
+                    <span>{path.estimated_hours} hours</span>
                   </div>
                   
-                  <div className="mt-3 text-sm">
-                    <span className="text-gray-500">Created by </span>
-                    <span className="font-medium text-gray-900">{path.creator.name}</span>
-                    <span className="text-gray-500"> · {path.creator.role}</span>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <BookOpenIcon className="h-4 w-4 mr-1" />
+                    <span>{path.modules?.length || 0} modules</span>
                   </div>
                 </div>
                 
-                {path.enrolled && (
-                  <div className="mt-5">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="text-sm font-medium text-gray-900">Progress</div>
-                      <div className="text-sm font-medium text-gray-500">{path.progress}%</div>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-primary-600 h-2 rounded-full"
-                        style={{ width: `${path.progress}%` }}
-                      ></div>
-                    </div>
+                {path.creator_details && (
+                  <div className="flex items-center text-sm text-gray-500 mb-4">
+                    <UserIcon className="h-4 w-4 mr-1" />
+                    <span>Created by {path.creator_details.first_name} {path.creator_details.last_name}</span>
                   </div>
                 )}
                 
-                <div className="mt-5 flex justify-end">
-                  {path.enrolled ? (
-                    <Link
-                      to={`/learning/${path.id}`}
-                      className="btn btn-primary"
-                    >
-                      Continue Learning
-                    </Link>
-                  ) : (
-                    <Link
-                      to={`/learning/${path.id}`}
-                      className="btn btn-secondary"
-                    >
-                      View Details
-                    </Link>
-                  )}
-                </div>
+                <button className="btn btn-secondary w-full">
+                  Enroll Now
+                </button>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

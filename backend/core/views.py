@@ -2,13 +2,24 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q
-from .models import User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, GithubProfile, GithubRepository, GithubLanguage
+from django.db.models import Q, Count, Sum, F, FloatField
+from django.db.models.functions import Cast
+from datetime import datetime, timedelta
+from django.utils import timezone
+import json
+from .models import (
+    User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
+    GithubProfile, GithubRepository, GithubLanguage, LearningModule,
+    ModuleProgress, LearningSession
+)
 from .serializers import (
     UserSerializer, SkillSerializer, LearningPathSerializer, 
     ProgressTrackerSerializer, JobMatchSerializer, ResumeDataSerializer,
-    GithubProfileSerializer, GithubRepositorySerializer, GithubLanguageSerializer
+    GithubProfileSerializer, GithubRepositorySerializer, GithubLanguageSerializer,
+    LearningModuleSerializer, ModuleProgressSerializer, LearningSessionSerializer,
+    ModuleProgressSummarySerializer, LearningTimeStatsSerializer
 )
+from .openai_service import OpenAIService
 from rest_framework import status
 
 # Create your views here.
@@ -69,6 +80,65 @@ class LearningPathViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset().filter(users=request.user))
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['POST'])
+    def generate(self, request):
+        """Generate a learning path using OpenAI API."""
+        goal = request.data.get('goal')
+        duration_weeks = request.data.get('duration_weeks', 4)
+        
+        if not goal:
+            return Response(
+                {"error": "Goal is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Get learning path data from OpenAI
+            learning_path_data = OpenAIService.generate_learning_path(goal, duration_weeks)
+            
+            if 'error' in learning_path_data:
+                return Response(learning_path_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Create the learning path
+            learning_path = LearningPath.objects.create(
+                title=learning_path_data.get('title', f"{goal} Learning Path"),
+                description=learning_path_data.get('description', ''),
+                estimated_hours=learning_path_data.get('estimated_hours', 0),
+                creator=request.user,
+                is_ai_generated=True
+            )
+            
+            # Create modules for the learning path
+            modules_data = learning_path_data.get('modules', [])
+            
+            for module_data in modules_data:
+                LearningModule.objects.create(
+                    learning_path=learning_path,
+                    title=module_data.get('title', ''),
+                    description=module_data.get('description', ''),
+                    module_type=module_data.get('type', 'article')[:20],  # Ensure it fits in the field
+                    url=module_data.get('url', ''),
+                    estimated_hours=module_data.get('estimated_hours', 1),
+                    order=module_data.get('order', 1)
+                )
+            
+            # Create a progress tracker for the user
+            ProgressTracker.objects.create(
+                user=request.user,
+                learning_path=learning_path,
+                progress_percentage=0.0
+            )
+            
+            # Return the created learning path with modules
+            serializer = self.get_serializer(learning_path)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to generate learning path: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class ProgressTrackerViewSet(viewsets.ModelViewSet):
@@ -199,3 +269,261 @@ class GithubLanguageViewSet(viewsets.ReadOnlyModelViewSet):
             except GithubProfile.DoesNotExist:
                 return GithubLanguage.objects.none()
         return GithubLanguage.objects.none()
+
+
+class LearningModuleViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing learning modules."""
+    serializer_class = LearningModuleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return modules from learning paths the user is enrolled in."""
+        user = self.request.user
+        return LearningModule.objects.filter(
+            learning_path__users=user
+        ).order_by('learning_path', 'order')
+    
+    @action(detail=False, methods=['GET'])
+    def by_path(self, request):
+        """Get modules for a specific learning path."""
+        path_id = request.query_params.get('path_id')
+        if not path_id:
+            return Response(
+                {"error": "path_id query parameter is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Verify the user is enrolled in this path
+            if not ProgressTracker.objects.filter(
+                user=request.user, 
+                learning_path_id=path_id
+            ).exists():
+                return Response(
+                    {"error": "You are not enrolled in this learning path"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+                
+            modules = LearningModule.objects.filter(learning_path_id=path_id).order_by('order')
+            serializer = self.get_serializer(modules, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ModuleProgressViewSet(viewsets.ModelViewSet):
+    """ViewSet for tracking module progress."""
+    serializer_class = ModuleProgressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Only allow users to see their own module progress."""
+        return ModuleProgress.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        """Save the user as the current user."""
+        serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['POST'])
+    def mark_completed(self, request):
+        """Mark a module as completed."""
+        module_id = request.data.get('module_id')
+        time_spent = request.data.get('time_spent_minutes', 0)
+        notes = request.data.get('notes', '')
+        
+        if not module_id:
+            return Response(
+                {"error": "module_id is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            module = LearningModule.objects.get(id=module_id)
+            
+            # Check if the user is enrolled in the learning path
+            if not ProgressTracker.objects.filter(
+                user=request.user, 
+                learning_path=module.learning_path
+            ).exists():
+                return Response(
+                    {"error": "You are not enrolled in this learning path"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Get or create module progress
+            progress, created = ModuleProgress.objects.get_or_create(
+                user=request.user,
+                module=module,
+                defaults={
+                    'is_completed': True,
+                    'time_spent_minutes': time_spent,
+                    'completed_at': timezone.now(),
+                    'notes': notes
+                }
+            )
+            
+            # Update if not created
+            if not created:
+                progress.is_completed = True
+                progress.time_spent_minutes += time_spent
+                progress.completed_at = timezone.now()
+                if notes:
+                    progress.notes = notes
+                progress.save()
+            
+            # Create a learning session record
+            if time_spent > 0:
+                LearningSession.objects.create(
+                    user=request.user,
+                    module=module,
+                    duration_minutes=time_spent
+                )
+            
+            # Update overall progress on the learning path
+            self._update_learning_path_progress(module.learning_path, request.user)
+            
+            return Response(ModuleProgressSerializer(progress).data)
+        
+        except LearningModule.DoesNotExist:
+            return Response(
+                {"error": "Module not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['GET'])
+    def summary(self, request):
+        """Get a summary of module progress for a learning path."""
+        path_id = request.query_params.get('path_id')
+        
+        if not path_id:
+            return Response(
+                {"error": "path_id query parameter is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Check if the user is enrolled in this path
+            if not ProgressTracker.objects.filter(
+                user=request.user, 
+                learning_path_id=path_id
+            ).exists():
+                return Response(
+                    {"error": "You are not enrolled in this learning path"}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Get total modules count
+            total_modules = LearningModule.objects.filter(learning_path_id=path_id).count()
+            
+            # Get completed modules count
+            completed_modules = ModuleProgress.objects.filter(
+                user=request.user,
+                module__learning_path_id=path_id,
+                is_completed=True
+            ).count()
+            
+            # Get total time spent
+            total_time_spent = ModuleProgress.objects.filter(
+                user=request.user,
+                module__learning_path_id=path_id
+            ).aggregate(total=Sum('time_spent_minutes'))['total'] or 0
+            
+            # Calculate completion percentage
+            completion_percentage = (completed_modules / total_modules * 100) if total_modules > 0 else 0
+            
+            summary = {
+                'total_modules': total_modules,
+                'completed_modules': completed_modules,
+                'total_time_spent': total_time_spent,
+                'completion_percentage': completion_percentage
+            }
+            
+            serializer = ModuleProgressSummarySerializer(summary)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['GET'])
+    def time_stats(self, request):
+        """Get learning time statistics by day."""
+        days = int(request.query_params.get('days', 7))
+        
+        # Limit to reasonable range
+        if days < 1:
+            days = 7
+        elif days > 90:
+            days = 90
+        
+        start_date = datetime.now().date() - timedelta(days=days)
+        
+        try:
+            # Get learning sessions grouped by date
+            stats = LearningSession.objects.filter(
+                user=request.user,
+                date__gte=start_date
+            ).values('date').annotate(
+                minutes=Sum('duration_minutes'),
+                module_count=Count('module', distinct=True)
+            ).order_by('date')
+            
+            serializer = LearningTimeStatsSerializer(stats, many=True)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def _update_learning_path_progress(self, learning_path, user):
+        """Update the overall progress percentage for a learning path."""
+        try:
+            # Get total modules count
+            total_modules = LearningModule.objects.filter(learning_path=learning_path).count()
+            
+            # Get completed modules count
+            completed_modules = ModuleProgress.objects.filter(
+                user=user,
+                module__learning_path=learning_path,
+                is_completed=True
+            ).count()
+            
+            # Calculate completion percentage
+            progress_percentage = (completed_modules / total_modules * 100) if total_modules > 0 else 0
+            
+            # Update progress tracker
+            progress_tracker = ProgressTracker.objects.get(user=user, learning_path=learning_path)
+            progress_tracker.progress_percentage = progress_percentage
+            
+            # Mark as completed if all modules are done
+            if progress_percentage >= 100:
+                progress_tracker.completed = True
+                progress_tracker.completed_at = timezone.now()
+                
+            progress_tracker.save()
+            
+        except Exception as e:
+            # Log the error but don't fail the request
+            print(f"Error updating learning path progress: {e}")
+
+
+class LearningSessionViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing learning sessions."""
+    serializer_class = LearningSessionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Only allow users to see their own learning sessions."""
+        return LearningSession.objects.filter(user=self.request.user).order_by('-date')

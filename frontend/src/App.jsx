@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import LearningPaths from './pages/LearningPaths';
+import LearningPathDetail from './pages/LearningPathDetail';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/learning" element={<LearningPaths />} />
+              <Route path="/learning/:id" element={<LearningPathDetail />} />
               {/* Add more routes as needed */}
               <Route path="/skills" element={<div className="p-4">Skills page coming soon</div>} />
               <Route path="/jobs" element={<div className="p-4">Job matches page coming soon</div>} />

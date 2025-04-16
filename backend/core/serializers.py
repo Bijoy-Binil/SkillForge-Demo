@@ -1,7 +1,11 @@
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
 from rest_framework import serializers
-from .models import User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, GithubRepository, GithubLanguage, GithubProfile
+from .models import (
+    User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
+    GithubRepository, GithubLanguage, GithubProfile, LearningModule, 
+    ModuleProgress, LearningSession
+)
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -36,14 +40,24 @@ class PathSkillSerializer(serializers.ModelSerializer):
         fields = ['id', 'skill', 'skill_details', 'order', 'estimated_hours']
 
 
+class LearningModuleSerializer(serializers.ModelSerializer):
+    """Serializer for learning modules."""
+    
+    class Meta:
+        model = LearningModule
+        fields = ['id', 'title', 'description', 'module_type', 'url', 
+                 'estimated_hours', 'order', 'created_at']
+
+
 class LearningPathSerializer(serializers.ModelSerializer):
     skills = PathSkillSerializer(source='pathskill_set', many=True, read_only=True)
     creator_details = UserSerializer(source='creator', read_only=True)
+    modules = LearningModuleSerializer(many=True, read_only=True)
     
     class Meta:
         model = LearningPath
         fields = ['id', 'title', 'description', 'skills', 'creator', 'creator_details', 
-                  'estimated_hours', 'created_at', 'updated_at']
+                  'estimated_hours', 'created_at', 'updated_at', 'is_ai_generated', 'modules']
 
 
 class ProgressTrackerSerializer(serializers.ModelSerializer):
@@ -112,4 +126,42 @@ class GithubProfileBasicSerializer(serializers.ModelSerializer):
         model = GithubProfile
         fields = ['id', 'username', 'name', 'avatar_url', 'html_url', 'public_repos', 
                  'followers', 'following', 'last_updated']
-        read_only_fields = ['id', 'last_updated'] 
+        read_only_fields = ['id', 'last_updated']
+
+
+class ModuleProgressSerializer(serializers.ModelSerializer):
+    """Serializer for module progress tracking."""
+    
+    module_details = LearningModuleSerializer(source='module', read_only=True)
+    
+    class Meta:
+        model = ModuleProgress
+        fields = ['id', 'user', 'module', 'module_details', 'is_completed', 
+                 'time_spent_minutes', 'started_at', 'completed_at', 'notes']
+
+
+class LearningSessionSerializer(serializers.ModelSerializer):
+    """Serializer for learning sessions."""
+    
+    module_details = LearningModuleSerializer(source='module', read_only=True)
+    
+    class Meta:
+        model = LearningSession
+        fields = ['id', 'user', 'module', 'module_details', 'date', 'duration_minutes', 'created_at']
+
+
+class ModuleProgressSummarySerializer(serializers.Serializer):
+    """Serializer for module progress summary stats."""
+    
+    total_modules = serializers.IntegerField()
+    completed_modules = serializers.IntegerField()
+    total_time_spent = serializers.IntegerField()
+    completion_percentage = serializers.FloatField()
+
+
+class LearningTimeStatsSerializer(serializers.Serializer):
+    """Serializer for learning time statistics by day/week."""
+    
+    date = serializers.DateField()
+    minutes = serializers.IntegerField()
+    module_count = serializers.IntegerField() 
