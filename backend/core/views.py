@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q, Count, Sum, F, FloatField
+from django.db.models import Q, Count, Sum, F, FloatField, Avg, DurationField
 from django.db.models.functions import Cast
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -17,12 +17,14 @@ from .serializers import (
     ProgressTrackerSerializer, JobMatchSerializer, ResumeDataSerializer,
     GithubProfileSerializer, GithubRepositorySerializer, GithubLanguageSerializer,
     LearningModuleSerializer, ModuleProgressSerializer, LearningSessionSerializer,
-    ModuleProgressSummarySerializer, LearningTimeStatsSerializer, ResumeBuilderSerializer
+    ModuleProgressSummarySerializer, LearningTimeStatsSerializer, ResumeBuilderSerializer,
+    AdminLearningPathSerializer, AdminLearningModuleSerializer, AdminUserSerializer,
+    AdminUserMetricsSerializer
 )
 from .openai_service import OpenAIService
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 # Create your views here.
 
@@ -688,3 +690,111 @@ class ResumeBuilderView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AdminLearningPathViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing learning paths."""
+    serializer_class = AdminLearningPathSerializer
+    permission_classes = [IsAdminUser]
+    queryset = LearningPath.objects.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user)
+
+
+class AdminLearningModuleViewSet(viewsets.ModelViewSet):
+    """Admin viewset for managing learning modules."""
+    serializer_class = AdminLearningModuleSerializer
+    permission_classes = [IsAdminUser]
+    queryset = LearningModule.objects.all()
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """Admin viewset for user management."""
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['email', 'first_name', 'last_name']
+
+
+class AdminMetricsView(APIView):
+    """View for admin metrics and statistics."""
+    permission_classes = [IsAdminUser]
+    
+    def get(self, request):
+        # Calculate user metrics
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+        
+        # Learning path metrics
+        total_learning_paths = LearningPath.objects.count()
+        completed_paths = ProgressTracker.objects.filter(completed=True).count()
+        
+        # Calculate average completion time
+        completed_trackers = ProgressTracker.objects.filter(completed=True)
+        if completed_trackers.exists():
+            avg_time = completed_trackers.aggregate(
+                avg_time=Avg(
+                    F('completed_at') - F('started_at'),
+                    output_field=DurationField()
+                )
+            )['avg_time']
+            average_completion_time = avg_time.total_seconds() / 3600  # Convert to hours
+        else:
+            average_completion_time = 0
+        
+        # Get popular skills
+        popular_skills = Skill.objects.annotate(
+            user_count=Count('users')
+        ).order_by('-user_count')[:5].values_list('name', flat=True)
+        
+        # User activity data
+        user_activity = {
+            'daily': self._get_daily_activity(),
+            'weekly': self._get_weekly_activity(),
+            'monthly': self._get_monthly_activity()
+        }
+        
+        metrics = {
+            'total_users': total_users,
+            'active_users': active_users,
+            'total_learning_paths': total_learning_paths,
+            'completed_paths': completed_paths,
+            'average_completion_time': average_completion_time,
+            'popular_skills': popular_skills,
+            'user_activity': user_activity
+        }
+        
+        serializer = AdminUserMetricsSerializer(metrics)
+        return Response(serializer.data)
+    
+    def _get_daily_activity(self):
+        today = timezone.now().date()
+        return {
+            'new_users': User.objects.filter(date_joined__date=today).count(),
+            'active_users': User.objects.filter(last_login__date=today).count(),
+            'completed_modules': ModuleProgress.objects.filter(
+                completed_at__date=today
+            ).count()
+        }
+    
+    def _get_weekly_activity(self):
+        week_ago = timezone.now() - timezone.timedelta(days=7)
+        return {
+            'new_users': User.objects.filter(date_joined__gte=week_ago).count(),
+            'active_users': User.objects.filter(last_login__gte=week_ago).count(),
+            'completed_modules': ModuleProgress.objects.filter(
+                completed_at__gte=week_ago
+            ).count()
+        }
+    
+    def _get_monthly_activity(self):
+        month_ago = timezone.now() - timezone.timedelta(days=30)
+        return {
+            'new_users': User.objects.filter(date_joined__gte=month_ago).count(),
+            'active_users': User.objects.filter(last_login__gte=month_ago).count(),
+            'completed_modules': ModuleProgress.objects.filter(
+                completed_at__gte=month_ago
+            ).count()
+        }

@@ -5,7 +5,9 @@ from .views import (
     ProgressTrackerViewSet, JobMatchViewSet, ResumeDataViewSet,
     GithubProfileViewSet, GithubRepositoryViewSet, GithubLanguageViewSet,
     LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet,
-    ProgressViewSet, ProgressStatsView, LearningTimeStatsView, ResumeBuilderView
+    ProgressViewSet, ProgressStatsView, LearningTimeStatsView, ResumeBuilderView,
+    AdminLearningPathViewSet, AdminLearningModuleViewSet, AdminUserViewSet,
+    AdminMetricsView
 )
 
 router = DefaultRouter()
@@ -23,10 +25,14 @@ router.register('module-progress', ModuleProgressViewSet, basename='module-progr
 router.register('learning-sessions', LearningSessionViewSet, basename='learning-sessions')
 router.register(r'progress', ProgressViewSet, basename='progress')
 router.register(r'learning-sessions', LearningSessionViewSet, basename='learning-sessions')
+router.register('admin/learning-paths', AdminLearningPathViewSet, basename='admin-learning-paths')
+router.register('admin/learning-modules', AdminLearningModuleViewSet, basename='admin-learning-modules')
+router.register('admin/users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('progress/stats/', ProgressStatsView.as_view(), name='progress-stats'),
     path('progress/time-stats/', LearningTimeStatsView.as_view(), name='learning-time-stats'),
     path('resume/generate/', ResumeBuilderView.as_view(), name='resume-generate'),
+    path('admin/metrics/', AdminMetricsView.as_view(), name='admin-metrics'),
 ] 
