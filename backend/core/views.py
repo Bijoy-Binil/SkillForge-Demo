@@ -10,7 +10,7 @@ import json
 from .models import (
     User, Skill, LearningPath, ProgressTracker, JobMatch, ResumeData, 
     GithubProfile, GithubRepository, GithubLanguage, LearningModule,
-    ModuleProgress, LearningSession, Job
+    ModuleProgress, LearningSession, Progress, Job
 )
 from .serializers import (
     UserSerializer, SkillSerializer, LearningPathSerializer, 
@@ -19,7 +19,7 @@ from .serializers import (
     LearningModuleSerializer, ModuleProgressSerializer, LearningSessionSerializer,
     ModuleProgressSummarySerializer, LearningTimeStatsSerializer, ResumeBuilderSerializer,
     AdminLearningPathSerializer, AdminLearningModuleSerializer, AdminUserSerializer,
-    AdminUserMetricsSerializer, JobSerializer
+    AdminUserMetricsSerializer, JobSerializer, ProgressSerializer, ProgressStatsSerializer
 )
 from .openai_service import OpenAIService
 from rest_framework import status
