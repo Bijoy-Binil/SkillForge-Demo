@@ -7,19 +7,24 @@ from .views import (
     LearningModuleViewSet, ModuleProgressViewSet, LearningSessionViewSet,
     ProgressViewSet, ProgressStatsView, LearningTimeStatsView, ResumeBuilderView,
     AdminLearningPathViewSet, AdminLearningModuleViewSet, AdminUserViewSet,
-    AdminMetricsView, JobViewSet, JobMatchView, JobAPIView, AdminUserListView,
-    AdminLearningPathView, AdminLearningModuleView
+    AdminMetricsView, JobViewSet, JobMatchView, JobAPIView
 )
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'skills', SkillViewSet)
 router.register(r'learning-paths', LearningPathViewSet)
-router.register(r'learning-modules', LearningModuleViewSet)
-router.register(r'progress', ProgressViewSet)
+router.register(r'learning-modules', LearningModuleViewSet, basename='learning-modules')
+router.register(r'progress-trackers', ProgressTrackerViewSet, basename='progress-trackers')
+router.register(r'progress', ProgressViewSet, basename='progress')
+router.register(r'module-progress', ModuleProgressViewSet, basename='module-progress')
+router.register(r'learning-sessions', LearningSessionViewSet, basename='learning-sessions')
 router.register(r'resume', ResumeDataViewSet, basename='resume')
 router.register(r'github', GithubProfileViewSet, basename='github')
+router.register(r'github-repos', GithubRepositoryViewSet, basename='github-repos')
+router.register(r'github-languages', GithubLanguageViewSet, basename='github-languages')
 router.register(r'jobs', JobViewSet, basename='jobs')
+router.register(r'job-matches', JobMatchViewSet, basename='job-matches')
 
 urlpatterns = [
     path('', include(router.urls)),

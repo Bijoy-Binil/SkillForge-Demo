@@ -243,7 +243,7 @@ class ModuleProgress(models.Model):
     """Track user progress for individual learning modules."""
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_progress')
-    module = models.ForeignKey(LearningModule, on_delete=models.CASCADE, related_name='progress')
+    module = models.ForeignKey(LearningModule, on_delete=models.CASCADE, related_name='module_progress')
     is_completed = models.BooleanField(default=False)
     time_spent_minutes = models.IntegerField(default=0)
     started_at = models.DateTimeField(auto_now_add=True)
