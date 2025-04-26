@@ -3,13 +3,22 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const { login, error, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Safely destructure auth context with defaults
+  const auth = useAuth() || {};
+  const {
+    login = () => Promise.resolve(false),
+    error: authError = null,
+    loading = false,
+    isAuthenticated = false
+  } = auth;
 
   // Check for success message from registration
   useEffect(() => {
@@ -39,90 +48,84 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
-  <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-md">
-    <div className="flex flex-col items-center">
-      {/* Icon */}
-      <div className="mb-3">
-        <AcademicCapIcon className="h-10 w-10 text-primary-600" aria-hidden="true" />
-      </div>
-      <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900">
-        Sign in to <span className="text-primary-600">SkillForge</span>
-      </h2>
-    </div>
-
-    {/* Alerts */}
-    {error && (
-      <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm text-red-700">{error}</p>
-      </div>
-    )}
-    {message && (
-      <div className="rounded-md bg-green-50 p-4">
-        <p className="text-sm text-green-700">{message}</p>
-      </div>
-    )}
-
-    {/* Form */}
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-        />
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Password
-          </label>
-          <div className="text-sm">
-            <Link to="/forgot-password" className="text-primary-600 hover:text-primary-500 font-medium">
-              Forgot password?
-            </Link>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <div className="login-icon-wrapper">
+            <AcademicCapIcon className="login-icon" aria-hidden="true" />
           </div>
+          <h2 className="login-title">
+            Sign in to <span className="login-brand">SkillForge</span>
+          </h2>
         </div>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-        />
+
+        {/* Alerts - using authError instead of error */}
+        {authError && (
+          <div className="login-alert error-alert">
+            <p className="alert-message">{authError}</p>
+          </div>
+        )}
+        {message && (
+          <div className="login-alert success-alert">
+            <p className="alert-message">{message}</p>
+          </div>
+        )}
+
+        {/* Form */}
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <div className="password-header">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <Link to="/forgot-password" className="forgot-password-link">
+                Forgot password?
+              </Link>
+            </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="submit-button"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+
+        <p className="register-link-text">
+          Not a member?{' '}
+          <Link to="/register" className="register-link">
+            Create an account
+          </Link>
+        </p>
       </div>
-
-      <div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex w-full justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-70"
-        >
-          {loading ? 'Signing in...' : 'Sign in'}
-        </button>
-      </div>
-    </form>
-
-    <p className="mt-6 text-center text-sm text-gray-500">
-      Not a member?{' '}
-      <Link to="/register" className="font-semibold text-primary-600 hover:text-primary-500">
-        Create an account
-      </Link>
-    </p>
-  </div>
-</div>
-
+    </div>
   );
-} 
+}

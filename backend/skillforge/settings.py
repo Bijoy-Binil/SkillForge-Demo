@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'core',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
+    "http://localhost:5173",
+    "http://localhost:5174"  # Vite dev server
 ]
 CORS_ALLOW_ALL_ORIGINS = True  # ⚠️ Don't use in production!
 

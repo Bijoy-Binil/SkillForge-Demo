@@ -1,0 +1,230 @@
+/* Base styles */
+.module-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .module-card.completed {
+    background-color: var(--completed-bg);
+    border-color: var(--completed-border);
+  }
+  
+  /* Header section */
+  .module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .module-content {
+    flex: 1;
+  }
+  
+  .module-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  
+  .module-description {
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0;
+  }
+  
+  /* Metadata */
+  .module-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  .meta-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+  }
+  
+  .module-type {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+  }
+  
+  .type-indicator {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    margin-right: 0.25rem;
+  }
+  
+  .type-video .type-indicator { background-color: var(--type-video); }
+  .type-article .type-indicator { background-color: var(--type-article); }
+  .type-exercise .type-indicator { background-color: var(--type-exercise); }
+  
+  /* Status icon */
+  .module-status {
+    margin-left: 0.5rem;
+  }
+  
+  .status-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .status-icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary-color);
+  }
+  
+  .status-icon.completed {
+    color: var(--completed-color);
+  }
+  
+  /* Actions section */
+  .module-actions {
+    border-top: 1px solid var(--border-light);
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+  }
+  
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .module-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .module-button.primary {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .module-button.primary:hover {
+    background-color: var(--primary-hover);
+  }
+  
+  .module-button.secondary {
+    background-color: var(--secondary-bg);
+    color: var(--secondary-color);
+  }
+  
+  .module-button.secondary:hover {
+    background-color: var(--secondary-hover);
+  }
+  
+  .module-button.danger {
+    background-color: var(--danger-bg);
+    color: var(--danger-color);
+  }
+  
+  .module-button.danger:hover {
+    background-color: var(--danger-hover);
+  }
+  
+  .button-icon {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.25rem;
+  }
+  
+  /* Notes */
+  .notes-container {
+    margin-top: 0.75rem;
+  }
+  
+  .notes-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .module-notes {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    resize: vertical;
+  }
+  
+  .module-notes:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-focus);
+  }
+  
+  /* Error message */
+  .module-error {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  
+  /* Loading state */
+  .module-loading {
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border-radius: 0.5rem;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  /* CSS Variables */
+  :root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-focus: rgba(37, 99, 235, 0.1);
+    --secondary-color: #4b5563;
+    --secondary-bg: #f3f4f6;
+    --secondary-hover: #e5e7eb;
+    --danger-color: #dc2626;
+    --danger-bg: #fef2f2;
+    --danger-hover: #fee2e2;
+    --completed-bg: #f0fdf4;
+    --completed-border: #bbf7d0;
+    --completed-color: #16a34a;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --border-light: #f3f4f6;
+    --bg-secondary: #f3f4f6;
+    --type-video: #ef4444;
+    --type-article: #3b82f6;
+    --type-exercise: #8b5cf6;
+    --error-color: #dc2626;
+  }

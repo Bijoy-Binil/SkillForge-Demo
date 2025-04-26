@@ -1,12 +1,13 @@
-import { 
-  AcademicCapIcon, 
-  BookOpenIcon, 
-  BriefcaseIcon, 
-  DocumentTextIcon, 
-  ClockIcon, 
-  ChartBarIcon 
+import {
+  AcademicCapIcon,
+  BookOpenIcon,
+  BriefcaseIcon,
+  DocumentTextIcon,
+  ClockIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
+// import './Dashboard.css'; // ← Make sure this matches your file path
 
 const stats = [
   { name: 'Learning Paths', value: '3', href: '/learning', icon: AcademicCapIcon },
@@ -40,30 +41,26 @@ const recommendedPaths = [
 
 export default function Dashboard() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-md text-gray-700">
+    <div className="dashboard">
+      <div className="dashboard-container">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <p className="dashboard-subtitle">
           Track your progress, view recommended learning paths, and see your latest activity.
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="dashboard-stats">
         {stats.map((stat) => (
-          <Link
-            key={stat.name}
-            to={stat.href}
-            className="card hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <stat.icon className="h-10 w-10 text-primary-600" aria-hidden="true" />
+          <Link key={stat.name} to={stat.href} className="dashboard-card">
+            <div className="dashboard-stat">
+              <div className="dashboard-icon-container">
+                <stat.icon className="dashboard-icon" aria-hidden="true" />
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="dashboard-stat-content">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{stat.name}</dt>
-                  <dd className="text-3xl font-semibold text-gray-900">{stat.value}</dd>
+                  <dt className="dashboard-stat-name">{stat.name}</dt>
+                  <dd className="dashboard-stat-value">{stat.value}</dd>
                 </dl>
               </div>
             </div>
@@ -71,55 +68,53 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="dashboard-grid">
         {/* Recent Activity */}
         <div>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
-            <ClockIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <div className="dashboard-section-header">
+            <h2 className="dashboard-section-title">Recent Activity</h2>
+            <ClockIcon className="dashboard-meta-icon" aria-hidden="true" />
           </div>
-          <div className="card overflow-hidden">
-            <ul role="list" className="divide-y divide-gray-200">
+          <div className="dashboard-activity-list">
+            <ul role="list">
               {activities.map((activity) => (
-                <li key={activity.id} className="px-4 py-4 sm:px-0">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
+                <li key={activity.id} className="dashboard-activity-item">
+                  <div className="dashboard-activity-icon-container">
+                    {activity.type === 'skill_completed' && (
+                      <div className="dashboard-activity-icon bg-green">
+                        <BookOpenIcon className="dashboard-icon" aria-hidden="true" />
+                      </div>
+                    )}
+                    {activity.type === 'path_enrolled' && (
+                      <div className="dashboard-activity-icon bg-blue">
+                        <AcademicCapIcon className="dashboard-icon" aria-hidden="true" />
+                      </div>
+                    )}
+                    {activity.type === 'job_match' && (
+                      <div className="dashboard-activity-icon bg-purple">
+                        <BriefcaseIcon className="dashboard-icon" aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="dashboard-activity-text">
+                    <p className="dashboard-activity-title">
                       {activity.type === 'skill_completed' && (
-                        <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                          <BookOpenIcon className="h-5 w-5 text-green-600" aria-hidden="true" />
-                        </div>
+                        <>Completed <span className="font-semibold">{activity.skill}</span> in {activity.path}</>
                       )}
                       {activity.type === 'path_enrolled' && (
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <AcademicCapIcon className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                        </div>
+                        <>Enrolled in <span className="font-semibold">{activity.path}</span></>
                       )}
                       {activity.type === 'job_match' && (
-                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                          <BriefcaseIcon className="h-5 w-5 text-purple-600" aria-hidden="true" />
-                        </div>
+                        <>New job match: <span className="font-semibold">{activity.job}</span> at {activity.company}</>
                       )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900">
-                        {activity.type === 'skill_completed' && (
-                          <>Completed <span className="font-semibold">{activity.skill}</span> in {activity.path}</>
-                        )}
-                        {activity.type === 'path_enrolled' && (
-                          <>Enrolled in <span className="font-semibold">{activity.path}</span></>
-                        )}
-                        {activity.type === 'job_match' && (
-                          <>New job match: <span className="font-semibold">{activity.job}</span> at {activity.company}</>
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-500">{activity.date}</p>
-                    </div>
+                    </p>
+                    <p className="dashboard-activity-date">{activity.date}</p>
                   </div>
                 </li>
               ))}
             </ul>
-            <div className="bg-gray-50 px-4 py-3 text-sm text-gray-700 flex justify-center">
-              <Link to="/activity" className="font-medium text-primary-600 hover:text-primary-500">
+            <div className="dashboard-activity-footer">
+              <Link to="/activity" className="dashboard-activity-link">
                 View all activity
               </Link>
             </div>
@@ -128,33 +123,30 @@ export default function Dashboard() {
 
         {/* Recommended Learning Paths */}
         <div>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Recommended for You</h2>
-            <ChartBarIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <div className="dashboard-section-header">
+            <h2 className="dashboard-section-title">Recommended for You</h2>
+            <ChartBarIcon className="dashboard-meta-icon" aria-hidden="true" />
           </div>
-          <div className="space-y-4">
+          <div className="dashboard-recommended-list">
             {recommendedPaths.map((path) => (
-              <Link 
-                key={path.id} 
+              <Link
+                key={path.id}
                 to={`/learning/${path.id}`}
-                className="card block hover:bg-gray-50 transition-colors"
+                className="dashboard-path"
               >
-                <h3 className="text-base font-semibold text-gray-900">{path.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{path.description}</p>
-                <div className="mt-3 flex items-center text-sm text-gray-500">
-                  <BookOpenIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                <h3 className="dashboard-path-title">{path.title}</h3>
+                <p className="dashboard-path-desc">{path.description}</p>
+                <div className="dashboard-path-meta">
+                  <BookOpenIcon className="dashboard-meta-icon" aria-hidden="true" />
                   <span>{path.skillCount} skills</span>
-                  <span className="mx-2">•</span>
-                  <ClockIcon className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" aria-hidden="true" />
+                  <span className="dashboard-path-separator">•</span>
+                  <ClockIcon className="dashboard-meta-icon" aria-hidden="true" />
                   <span>~{path.estimatedHours} hours</span>
                 </div>
               </Link>
             ))}
-            <div className="text-center">
-              <Link
-                to="/learning/discover"
-                className="btn btn-primary inline-flex items-center"
-              >
+            <div className="dashboard-discover-footer">
+              <Link to="/learning/discover" className="btn-primary">
                 Explore more learning paths
               </Link>
             </div>
@@ -163,4 +155,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-} 
+}

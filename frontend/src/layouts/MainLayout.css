@@ -1,0 +1,353 @@
+/* Base variables */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --background-primary: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Layout container */
+  .layout-container {
+    height: 100vh;
+    display: flex;
+  }
+  
+  /* Mobile sidebar styles */
+  .mobile-sidebar-overlay {
+    position: relative;
+    z-index: 50;
+  }
+  
+  @media (min-width: 1024px) {
+    .mobile-sidebar-overlay {
+      display: none;
+    }
+  }
+  
+  .overlay-background {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  .mobile-sidebar-container {
+    position: fixed;
+    inset: 0;
+    display: flex;
+  }
+  
+  .mobile-sidebar-panel {
+    position: relative;
+    margin-right: 1rem;
+    flex: 1 1 0%;
+    max-width: 20rem;
+  }
+  
+  .mobile-sidebar-close {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    display: flex;
+    width: 4rem;
+    justify-content: center;
+    padding-top: 1.25rem;
+  }
+  
+  .close-icon {
+    height: 1.5rem;
+    width: 1.5rem;
+    color: white;
+  }
+  
+  .mobile-sidebar-content {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+    background-color: var(--primary-color);
+    padding: 0 1.5rem 1rem;
+  }
+  
+  /* Desktop sidebar */
+  .desktop-sidebar {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    width: 18rem;
+    flex-direction: column;
+  }
+  
+  @media (min-width: 1024px) {
+    .desktop-sidebar {
+      display: flex;
+    }
+  }
+  
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+    background-color: var(--primary-color);
+    padding: 0 1.5rem 1rem;
+  }
+  
+  /* Common sidebar elements */
+  .sidebar-logo {
+    display: flex;
+    height: 4rem;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .logo-icon {
+    height: 2rem;
+    width: 2rem;
+    color: white;
+  }
+  
+  .logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+  }
+  
+  .nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  
+  .nav-link {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.2s;
+  }
+  
+  .nav-link:hover {
+    background-color: var(--primary-hover);
+  }
+  
+  .nav-icon {
+    height: 1.5rem;
+    width: 1.5rem;
+    color: white;
+  }
+  
+  /* Main content area */
+  .main-content {
+    flex-grow: 1;
+    padding-left: 0;
+  }
+  
+  @media (min-width: 1024px) {
+    .main-content {
+      padding-left: 18rem;
+    }
+  }
+  
+  /* Top navigation bar */
+  .top-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    height: 4rem;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-primary);
+    padding: 0 1rem;
+    box-shadow: 0 1px 2px var(--shadow-color);
+  }
+  
+  .mobile-menu-button {
+    padding: 0.625rem;
+    color: var(--text-primary);
+  }
+  
+  @media (min-width: 1024px) {
+    .mobile-menu-button {
+      display: none;
+    }
+  }
+  
+  .menu-icon {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+  
+  .user-menu-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  /* User menu styles */
+  .user-menu-button {
+    display: flex;
+    align-items: center;
+    padding: 0.375rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .user-avatar {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+  }
+  
+  .default-avatar {
+    height: 2rem;
+    width: 2rem;
+    color: var(--text-secondary);
+  }
+  
+  .user-name {
+    margin-left: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    z-index: 10;
+    margin-top: 0.625rem;
+    min-width: 10rem;
+    border-radius: 0.375rem;
+    background-color: var(--background-primary);
+    box-shadow: 0 1px 3px var(--shadow-color);
+    padding: 0.5rem 0;
+  }
+  
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown-item.active {
+    background-color: #f3f4f6;
+  }
+  
+  .logout-icon {
+    height: 1rem;
+    width: 1rem;
+    margin-right: 0.5rem;
+  }
+  
+  /* Content area */
+  .content-area {
+    padding: 1.5rem 0;
+  }
+  
+  .content-container {
+    padding: 0 1rem;
+  }
+  
+  /* Transitions */
+  .overlay-enter {
+    animation: overlayEnter 300ms ease-out;
+  }
+  
+  .overlay-leave {
+    animation: overlayLeave 300ms ease-in;
+  }
+  
+  @keyframes overlayEnter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes overlayLeave {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  .sidebar-enter {
+    animation: sidebarEnter 300ms ease-out;
+  }
+  
+  .sidebar-leave {
+    animation: sidebarLeave 300ms ease-in;
+  }
+  
+  @keyframes sidebarEnter {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  
+  @keyframes sidebarLeave {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+  
+  .menu-enter {
+    animation: menuEnter 100ms ease-out;
+  }
+  
+  .menu-leave {
+    animation: menuLeave 75ms ease-in;
+  }
+  
+  @keyframes menuEnter {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes menuLeave {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+  
+  /* Accessibility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
