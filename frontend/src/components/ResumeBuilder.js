@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Button, Card, Spinner, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import './ResumeBuilder.css';
 
@@ -42,44 +41,38 @@ const ResumeBuilder = () => {
 
     return (
         <div className="resume-builder">
-            <Card className="mb-4">
-                <Card.Header>
+            <div className="card mb-4">
+                <div className="card-header">
                     <h2>AI Resume Builder</h2>
-                </Card.Header>
-                <Card.Body>
-                    {error && <Alert variant="danger">{error}</Alert>}
+                </div>
+                <div className="card-body">
+                    {error && <div className="alert">{error}</div>}
                     
                     <div className="mb-4">
-                        <Button 
-                            variant="primary" 
+                        <button 
                             onClick={handleGenerateResume}
                             disabled={loading}
-                            className="me-2"
+                            className="generate-btn"
                         >
                             {loading ? (
                                 <>
-                                    <Spinner
-                                        as="span"
-                                        animation="border"
-                                        size="sm"
-                                        role="status"
-                                        aria-hidden="true"
-                                    />
-                                    <span className="ms-2">Generating...</span>
+                                    <div className="spinner-border" role="status">
+                                        <span className="sr-only">Loading...</span>
+                                    </div>
+                                    <span>Generating...</span>
                                 </>
                             ) : (
                                 'Generate Resume'
                             )}
-                        </Button>
+                        </button>
                         
                         {resumeHtml && (
-                            <Button 
-                                variant="success" 
+                            <button 
                                 onClick={handlePrint}
                                 className="no-print"
                             >
                                 Print/Download
-                            </Button>
+                            </button>
                         )}
                     </div>
 
@@ -90,10 +83,10 @@ const ResumeBuilder = () => {
                             className="resume-preview"
                         />
                     )}
-                </Card.Body>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };
 
-export default ResumeBuilder; 
+export default ResumeBuilder;

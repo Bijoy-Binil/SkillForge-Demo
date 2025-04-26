@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import learningService from '../api/learningService';
-import { 
-  SparklesIcon, 
-  ClockIcon, 
-  AcademicCapIcon,
-  ArrowPathIcon 
-} from '@heroicons/react/24/outline';
 import './LearningPathGenerator.css';
 
 const GOAL_SUGGESTIONS = [
@@ -22,12 +16,28 @@ const GOAL_SUGGESTIONS = [
 ];
 
 export default function LearningPathGenerator() {
-  // ... keep all existing logic and state ...
+  const [goal, setGoal] = useState('');
+  const [durationWeeks, setDurationWeeks] = useState(4);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    // Add your logic to handle form submission
+    // Example: calling learningService
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setGoal(suggestion);
+  };
 
   return (
     <div className="generator-container">
       <div className="generator-header">
-        <SparklesIcon className="generator-icon" />
+        <span className="generator-icon sparkle-icon"></span>
         <h2 className="generator-title">AI Learning Path Generator</h2>
       </div>
       
@@ -93,7 +103,7 @@ export default function LearningPathGenerator() {
               <option value={8}>8 weeks</option>
               <option value={12}>12 weeks</option>
             </select>
-            <ClockIcon className="duration-icon" />
+            <span className="duration-icon clock-icon"></span>
           </div>
         </div>
         
@@ -105,12 +115,12 @@ export default function LearningPathGenerator() {
           >
             {loading ? (
               <>
-                <ArrowPathIcon className="spinner" />
+                <span className="spinner-icon"></span>
                 Generating your learning path...
               </>
             ) : (
               <>
-                <AcademicCapIcon className="submit-icon" />
+                <span className="submit-icon"></span>
                 Generate Learning Path
               </>
             )}

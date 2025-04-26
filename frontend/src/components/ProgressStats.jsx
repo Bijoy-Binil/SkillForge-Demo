@@ -31,7 +31,98 @@ ChartJS.register(
 );
 
 export default function ProgressStats({ pathId }) {
-  // ... keep all existing logic and state ...
+  const [loading, setLoading] = useState(true);  // Initialize loading state
+  const [error, setError] = useState(null);  // Initialize error state
+  const [summary, setSummary] = useState(null);  // Initialize summary state
+  const [timeStats, setTimeStats] = useState([]);  // Initialize time stats state
+  const [days, setDays] = useState(7);  // Initialize days state for the filter
+
+  // Simulating an API call to fetch data for the example
+  useEffect(() => {
+    // Simulating API data fetching with a timeout
+    setTimeout(() => {
+      setLoading(false);  // Set loading to false once data is fetched
+      setSummary({
+        completed_modules: 5,
+        total_modules: 10,
+        completion_percentage: 50,
+        total_time_spent: 300,
+      });
+      setTimeStats([
+        { minutes: 60 },
+        { minutes: 90 },
+        { minutes: 120 },
+        // More stats
+      ]);
+    }, 2000); // Simulate 2 seconds delay
+  }, []);
+
+  // Handle days filter change
+  const handleDaysChange = (days) => {
+    setDays(days);
+  };
+
+  // Pie chart data and options (define these variables)
+  const pieData = {
+    labels: ['Completed', 'Remaining'],
+    datasets: [
+      {
+        data: [
+          summary ? summary.completed_modules : 0,
+          summary ? summary.total_modules - summary.completed_modules : 0,
+        ],
+        backgroundColor: ['#4CAF50', '#FFC107'],  // Colors for completed and remaining
+      },
+    ],
+  };
+
+  const pieOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.label || '';
+            if (context.raw !== undefined) {
+              label += ': ' + context.raw + ' modules';
+            }
+            return label;
+          },
+        },
+      },
+    },
+  };
+
+  // Bar chart data and options (define these variables)
+  const barData = {
+    labels: timeStats.map((_, index) => `${index + 1}`),  // Label for each day
+    datasets: [
+      {
+        label: 'Time Spent (min)',
+        data: timeStats.map(stat => stat.minutes),
+        backgroundColor: '#4CAF50',
+      },
+    ],
+  };
+
+  const barOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            return `${context.label}: ${context.raw} min`;
+          },
+        },
+      },
+    },
+  };
 
   if (loading) {
     return (
@@ -41,7 +132,7 @@ export default function ProgressStats({ pathId }) {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="stats-error">
@@ -50,11 +141,11 @@ export default function ProgressStats({ pathId }) {
       </div>
     );
   }
-  
+
   return (
     <div className="stats-container">
       <h2 className="stats-title">Progress Statistics</h2>
-      
+
       {summary && (
         <div className="stats-grid">
           <div className="stat-card stat-completion">
@@ -69,7 +160,7 @@ export default function ProgressStats({ pathId }) {
               {Math.round(summary.completion_percentage)}% complete
             </p>
           </div>
-          
+
           <div className="stat-card stat-time">
             <div className="stat-header">
               <ClockIcon className="stat-icon" />
@@ -82,7 +173,7 @@ export default function ProgressStats({ pathId }) {
               {Math.round(summary.total_time_spent / 60)} hours total
             </p>
           </div>
-          
+
           <div className="stat-card stat-pace">
             <div className="stat-header">
               <ChartBarIcon className="stat-icon" />
@@ -99,14 +190,14 @@ export default function ProgressStats({ pathId }) {
           </div>
         </div>
       )}
-      
+
       <div className="charts-container">
         <div className="chart-wrapper">
           <div className="chart-container">
             <Pie data={pieData} options={pieOptions} />
           </div>
         </div>
-        
+
         <div className="chart-wrapper">
           <div className="time-filter">
             <button
@@ -136,7 +227,7 @@ export default function ProgressStats({ pathId }) {
           </div>
         </div>
       </div>
-      
+
       {!summary && pathId && (
         <div className="stats-empty">
           No progress data available for this learning path.

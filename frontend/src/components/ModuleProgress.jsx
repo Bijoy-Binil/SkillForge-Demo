@@ -1,15 +1,50 @@
 import { useState, useEffect } from 'react';
-import { CheckCircleIcon, ClockIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
 import learningService from '../api/learningService';
 import './ModuleProgress.css';
 
 export default function ModuleProgress({ moduleId, pathId, onModuleCompleted, initialCompleted = false }) {
-  // ... keep all existing logic and state ...
+  const [module, setModule] = useState(null);
+  const [isCompleted, setIsCompleted] = useState(initialCompleted);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [notes, setNotes] = useState('');
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [isTracking, setIsTracking] = useState(false);
+
+  // Assume we fetch the module data using learningService
+  useEffect(() => {
+    const fetchModuleData = async () => {
+      setLoading(true);
+      try {
+        const fetchedModule = await learningService.getModule(moduleId); // This function should be defined in your service.
+        setModule(fetchedModule);
+      } catch (err) {
+        setError('Failed to load module data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchModuleData();
+  }, [moduleId]);
 
   if (!module) {
     return <div className="module-loading">Loading module...</div>;
   }
+
+  const handleMarkCompleted = () => {
+    setIsCompleted(true);
+    onModuleCompleted(moduleId);
+  };
+
+  const handleStartTracking = () => {
+    setIsTracking(true);
+    // Start tracking logic (e.g., setInterval for time tracking)
+  };
+
+  const handleStopTracking = () => {
+    setIsTracking(false);
+    // Stop tracking logic (e.g., clearInterval)
+  };
 
   return (
     <div className={`module-card ${isCompleted ? 'completed' : ''}`}>
@@ -20,7 +55,7 @@ export default function ModuleProgress({ moduleId, pathId, onModuleCompleted, in
           
           <div className="module-meta">
             <span className="meta-item">
-              <ClockIcon className="meta-icon" />
+              <span className="meta-icon clock-icon"></span> 
               {module.estimated_hours} hours
             </span>
             
@@ -33,14 +68,14 @@ export default function ModuleProgress({ moduleId, pathId, onModuleCompleted, in
         
         <div className="module-status">
           {isCompleted ? (
-            <CheckCircleSolidIcon className="status-icon completed" />
+            <span className="status-icon completed">✔</span> 
           ) : (
             <button 
               onClick={handleMarkCompleted}
               disabled={loading}
               className="status-button"
             >
-              <CheckCircleIcon className="status-icon" />
+              <span className="status-icon">✔</span>
             </button>
           )}
         </div>
@@ -55,7 +90,7 @@ export default function ModuleProgress({ moduleId, pathId, onModuleCompleted, in
               rel="noopener noreferrer"
               className="module-button secondary"
             >
-              Open Resource <ArrowTopRightOnSquareIcon className="button-icon" />
+              Open Resource <span className="button-icon">↗</span>
             </a>
             
             {isTracking ? (

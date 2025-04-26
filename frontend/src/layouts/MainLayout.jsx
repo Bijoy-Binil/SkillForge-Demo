@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { 
@@ -8,11 +8,24 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import './MainLayout.css';
+import ResumeBuilder from '../components/ResumeBuilder';
+import ProgressStats from '../components/ProgressStats';
+import ModuleProgress from '../components/ModuleProgress';
+import LearningPathGenerator from '../components/LearningPathGenerator';
+import AdminDashboard from '../components/admin/AdminDashboard';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showResumeBuilder, setShowResumeBuilder] = useState(false);
+  const [showProgressStats, setShowProgressStats] = useState(false);
+  const [showModuleProgress, setShowModuleProgress] = useState(false);
+  const [showLearningPathGenerator, setShowLearningPathGenerator] = useState(false);
+  const [enrolledPaths, setEnrolledPaths] = useState([]);
+  const [selectedPathId, setSelectedPathId] = useState('');
+  const [modules, setModules] = useState([]);
+  const [selectedModuleId, setSelectedModuleId] = useState('');
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -26,6 +39,27 @@ export default function MainLayout() {
     logout();
     navigate('/login');
   };
+
+  // Fetch enrolled paths on mount
+  useEffect(() => {
+    if (showModuleProgress) {
+      import('../api/learningService').then(({ default: learningService }) => {
+        learningService.getMyEnrolledPaths().then(setEnrolledPaths);
+      });
+    }
+  }, [showModuleProgress]);
+
+  // Fetch modules when a path is selected
+  useEffect(() => {
+    if (selectedPathId) {
+      import('../api/learningService').then(({ default: learningService }) => {
+        learningService.getModulesByPath(selectedPathId).then(setModules);
+      });
+    } else {
+      setModules([]);
+      setSelectedModuleId('');
+    }
+  }, [selectedPathId]);
 
   return (
     <div className="layout-container">
@@ -170,6 +204,68 @@ export default function MainLayout() {
 
         <main className="content-area">
           <div className="content-container">
+            {user && (user.is_staff || user.is_superuser) && (
+              <div className="mb-4">
+                <AdminDashboard />
+              </div>
+            )}
+            <button
+              className="btn btn-primary mb-4"
+              onClick={() => setShowResumeBuilder((prev) => !prev)}
+            >
+              {showResumeBuilder ? 'Hide AI Resume Builder' : 'Show AI Resume Builder'}
+            </button>
+            {showResumeBuilder && <ResumeBuilder />}
+            <button
+              className="btn btn-secondary mb-4"
+              onClick={() => setShowProgressStats((prev) => !prev)}
+            >
+              {showProgressStats ? 'Hide Progress Stats' : 'Show Progress Stats'}
+            </button>
+            {showProgressStats && <ProgressStats />}
+            <button
+              className="btn btn-secondary mb-4"
+              onClick={() => setShowModuleProgress((prev) => !prev)}
+            >
+              {showModuleProgress ? 'Hide Module Progress' : 'Show Module Progress'}
+            </button>
+            {showModuleProgress && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-4 mb-2">
+                  <select
+                    className="form-select"
+                    value={selectedPathId}
+                    onChange={e => setSelectedPathId(e.target.value)}
+                  >
+                    <option value="">Select Learning Path</option>
+                    {enrolledPaths.map(path => (
+                      <option key={path.id} value={path.id}>{path.title}</option>
+                    ))}
+                  </select>
+                  <select
+                    className="form-select"
+                    value={selectedModuleId}
+                    onChange={e => setSelectedModuleId(e.target.value)}
+                    disabled={!selectedPathId}
+                  >
+                    <option value="">Select Module</option>
+                    {modules.map(module => (
+                      <option key={module.id} value={module.id}>{module.title}</option>
+                    ))}
+                  </select>
+                </div>
+                {selectedPathId && selectedModuleId && (
+                  <ModuleProgress moduleId={selectedModuleId} pathId={selectedPathId} />
+                )}
+              </div>
+            )}
+            <button
+              className="btn btn-secondary mb-4"
+              onClick={() => setShowLearningPathGenerator((prev) => !prev)}
+            >
+              {showLearningPathGenerator ? 'Hide AI Learning Path Generator' : 'Show AI Learning Path Generator'}
+            </button>
+            {showLearningPathGenerator && <LearningPathGenerator />}
             <Outlet />
           </div>
         </main>

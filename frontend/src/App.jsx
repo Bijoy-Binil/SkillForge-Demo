@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from './context/AuthContext';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -16,18 +17,18 @@ import ResumeCompleteness from './pages/ResumeCompleteness';
 // Test component to verify CSS
 function CssTest() {
   return (
-    <div style={{ padding: '40px' }}>
-      <h1>CSS Test Page</h1>
+    <div className="test-container">
+      <h1 className="test-title">CSS Test Page</h1>
       <div className="test-box">
         If you can see this box in blue color with white text, CSS is working!
       </div>
-      <div style={{ marginTop: '20px' }}>
+      <div className="button-container">
         <button className="btn btn-primary">Primary Button</button>
-        <button className="btn btn-secondary" style={{ marginLeft: '10px' }}>Secondary Button</button>
-        <button className="btn btn-danger" style={{ marginLeft: '10px' }}>Danger Button</button>
-        <button className="btn btn-success" style={{ marginLeft: '10px' }}>Success Button</button>
+        <button className="btn btn-secondary">Secondary Button</button>
+        <button className="btn btn-danger">Danger Button</button>
+        <button className="btn btn-success">Success Button</button>
       </div>
-      <div className="card" style={{ marginTop: '20px', maxWidth: '500px' }}>
+      <div className="card">
         <h3>Card Component</h3>
         <p>This is a card component with hover effects.</p>
       </div>
@@ -53,7 +54,6 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/learning" element={<LearningPaths />} />
               <Route path="/learning/:id" element={<LearningPathDetail />} />
-              {/* Add more routes as needed */}
               <Route path="/skills" element={<SkillsInProgress />} />
               <Route path="/jobs" element={<JobMatches />} />
               <Route path="/resume" element={<ResumeCompleteness />} />
@@ -65,10 +65,10 @@ function App() {
           
           {/* 404 route */}
           <Route path="*" element={
-            <div className="flex items-center justify-center h-screen">
-              <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900">404</h1>
-                <p className="mt-2 text-lg text-gray-600">Page not found</p>
+            <div className="not-found">
+              <div className="not-found-content">
+                <h1 className="not-found-title">404</h1>
+                <p className="not-found-message">Page not found</p>
               </div>
             </div>
           } />
