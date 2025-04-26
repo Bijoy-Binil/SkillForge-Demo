@@ -4,7 +4,7 @@ import { Dialog, Menu, Transition } from '@headlessui/react';
 import { 
   Bars3Icon, XMarkIcon, UserCircleIcon, AcademicCapIcon,
   HomeIcon, BookOpenIcon, BriefcaseIcon, DocumentTextIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon, CodeBracketIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import './MainLayout.css';
@@ -33,6 +33,7 @@ export default function MainLayout() {
     { name: 'Skills', href: '/skills', icon: BookOpenIcon },
     { name: 'Job Matches', href: '/jobs', icon: BriefcaseIcon },
     { name: 'Resume', href: '/resume', icon: DocumentTextIcon },
+    { name: 'GitHub Analysis', href: '/github-analysis', icon: CodeBracketIcon },
   ];
 
   const handleLogout = () => {
@@ -267,6 +268,7 @@ export default function MainLayout() {
             </button>
             {showLearningPathGenerator && <LearningPathGenerator />}
             <Outlet />
+            
           </div>
         </main>
       </div>

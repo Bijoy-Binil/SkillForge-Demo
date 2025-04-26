@@ -13,6 +13,8 @@ import LearningPathDetail from './pages/LearningPathDetail';
 import SkillsInProgress from './pages/SkillsInProgress';
 import JobMatches from './pages/JobMatches';
 import ResumeCompleteness from './pages/ResumeCompleteness';
+import UserProfile from './pages/UserProfile';
+import GithubSkillAnalysis from './pages/GithubSkillAnalysis';
 
 // Test component to verify CSS
 function CssTest() {
@@ -57,6 +59,8 @@ function App() {
               <Route path="/skills" element={<SkillsInProgress />} />
               <Route path="/jobs" element={<JobMatches />} />
               <Route path="/resume" element={<ResumeCompleteness />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/github-analysis" element={<GithubSkillAnalysis />} />
             </Route>
           </Route>
           

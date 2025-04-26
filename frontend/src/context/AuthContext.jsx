@@ -20,10 +20,13 @@ export const AuthProvider = ({ children }) => {
           setLoading(true);
           const userData = await authService.getCurrentUser();
           setUser(userData);
+        } else {
+          setUser(null); // Ensures no user if not authenticated
         }
       } catch (err) {
         console.error('Failed to load user:', err);
-        authService.logout();
+        authService.logout(); // Log out on error
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -38,18 +41,10 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       await authService.login(email, password);
-      try {
-        const userData = await authService.getCurrentUser();
-        setUser(userData);
-        setLoading(false);
-        return true;
-      } catch (profileError) {
-        console.error('Error fetching user profile:', profileError);
-        setError('Login successful but failed to fetch user profile. Please try again.');
-        authService.logout();
-        setLoading(false);
-        return false;
-      }
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      setLoading(false);
+      return true;
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -65,12 +60,12 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.register(userData);
       navigate('/login', { state: { message: 'Registration successful! Please log in.' } });
+      setLoading(false);
       return true;
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
-      return false;
-    } finally {
       setLoading(false);
+      return false;
     }
   };
 
@@ -104,4 +99,4 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext; 
+export default AuthContext;
