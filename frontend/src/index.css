@@ -1166,3 +1166,391 @@ a:hover {
   --error-text: #dc2626;
 }
 /* ======================Register================== */
+
+/* =========================Skills in progress=================== */
+
+/* General Styles */
+.skills-container {
+  max-width: 48rem; /* Equivalent to max-w-3xl */
+  margin: 0 auto;
+  padding: 1.5rem; /* Equivalent to p-6 */
+}
+
+.skills-heading {
+  font-size: 1.875rem; /* Equivalent to text-3xl */
+  font-weight: bold;
+  margin-bottom: 0.5rem; /* Equivalent to mb-2 */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Equivalent to gap-2 */
+}
+
+.book-icon {
+  width: 2rem; /* Equivalent to w-8 */
+  height: 2rem; /* Equivalent to h-8 */
+  color: #3b82f6; /* Equivalent to text-blue-600 */
+}
+
+.skills-description {
+  color: #4b5563; /* Equivalent to text-gray-600 */
+  margin-bottom: 1.5rem; /* Equivalent to mb-6 */
+}
+
+.summary-container {
+  background-color: #eff6ff; /* Equivalent to bg-blue-50 */
+  border-radius: 0.5rem; /* Equivalent to rounded-lg */
+  padding: 1rem; /* Equivalent to p-4 */
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Equivalent to gap-6 */
+}
+
+.total-skills, .avg-progress {
+  font-size: 1.25rem; /* Equivalent to text-2xl */
+  font-weight: 600; /* Equivalent to font-semibold */
+  color: #1d4ed8; /* Equivalent to text-blue-700 */
+}
+
+.summary-text {
+  color: #6b7280; /* Equivalent to text-gray-500 */
+}
+
+.no-skills-text {
+  text-align: center;
+  color: #6b7280; /* Equivalent to text-gray-500 */
+}
+
+.skills-list {
+  margin-top: 2rem; /* Equivalent to space-y-6 */
+}
+
+.skill-card {
+  background-color: white;
+  border-radius: 0.5rem; /* Equivalent to rounded-lg */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Equivalent to shadow */
+  padding: 1rem; /* Equivalent to p-4 */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Equivalent to gap-2 */
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skill-name {
+  font-weight: 500; /* Equivalent to font-medium */
+  font-size: 1.125rem; /* Equivalent to text-lg */
+}
+
+.skill-hours {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* Equivalent to gap-1 */
+  color: #6b7280; /* Equivalent to text-gray-500 */
+  font-size: 0.875rem; /* Equivalent to text-sm */
+}
+
+.clock-icon {
+  width: 1rem; /* Equivalent to w-4 */
+  height: 1rem; /* Equivalent to h-4 */
+}
+
+.progress-bar {
+  width: 100%;
+  background-color: #e5e7eb; /* Equivalent to bg-gray-200 */
+  border-radius: 9999px; /* Equivalent to rounded-full */
+  height: 0.75rem; /* Equivalent to h-3 */
+}
+
+.progress {
+  background-color: #3b82f6; /* Equivalent to bg-blue-500 */
+  height: 0.75rem; /* Equivalent to h-3 */
+  border-radius: 9999px; /* Equivalent to rounded-full */
+  transition: width 0.5s ease-in-out; /* Equivalent to transition-all duration-500 */
+}
+
+.progress-text {
+  text-align: right;
+  color: #1d4ed8; /* Equivalent to text-blue-700 */
+  font-weight: 600; /* Equivalent to font-semibold */
+  font-size: 0.875rem; /* Equivalent to text-sm */
+}
+
+/* Loading and Error States */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px; /* Equivalent to min-h-[300px] */
+}
+
+.loading-icon, .error-icon {
+  width: 2.5rem; /* Equivalent to w-10 */
+  height: 2.5rem; /* Equivalent to h-10 */
+}
+
+.loading-text, .error-text {
+  color: #1d4ed8; /* Blue color for loading or red for error */
+  font-weight: 500;
+}
+/* ======================Job matches=================== */
+/* General Styles */
+.job-matches-container {
+  max-width: 48rem; /* Equivalent to max-w-3xl */
+  margin: 0 auto;
+  padding: 1.5rem; /* Equivalent to p-6 */
+}
+
+.job-matches-heading {
+  font-size: 1.875rem; /* Equivalent to text-3xl */
+  font-weight: bold;
+  margin-bottom: 0.5rem; /* Equivalent to mb-2 */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Equivalent to gap-2 */
+}
+
+.briefcase-icon {
+  width: 2rem; /* Equivalent to w-8 */
+  height: 2rem; /* Equivalent to h-8 */
+  color: #3b82f6; /* Equivalent to text-blue-600 */
+}
+
+.job-matches-description {
+  color: #4b5563; /* Equivalent to text-gray-600 */
+  margin-bottom: 1.5rem; /* Equivalent to mb-6 */
+}
+
+.summary-container {
+  background-color: #eff6ff; /* Equivalent to bg-blue-50 */
+  border-radius: 0.5rem; /* Equivalent to rounded-lg */
+  padding: 1rem; /* Equivalent to p-4 */
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Equivalent to gap-6 */
+}
+
+.total-jobs, .top-match {
+  font-size: 1.25rem; /* Equivalent to text-2xl */
+  font-weight: 600; /* Equivalent to font-semibold */
+  color: #1d4ed8; /* Equivalent to text-blue-700 */
+}
+
+.summary-text {
+  color: #6b7280; /* Equivalent to text-gray-500 */
+}
+
+.no-jobs-text {
+  text-align: center;
+  color: #6b7280; /* Equivalent to text-gray-500 */
+}
+
+.jobs-list {
+  margin-top: 2rem; /* Equivalent to space-y-6 */
+}
+
+.job-card {
+  background-color: white;
+  border-radius: 0.5rem; /* Equivalent to rounded-lg */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Equivalent to shadow */
+  padding: 1rem; /* Equivalent to p-4 */
+  display: flex;
+  gap: 1rem; /* Equivalent to gap-4 */
+  align-items: center;
+}
+
+.job-logo {
+  width: 3rem; /* Equivalent to w-12 */
+  height: 3rem; /* Equivalent to h-12 */
+  border-radius: 0.375rem; /* Equivalent to rounded-md */
+  object-fit: cover;
+}
+
+.job-info {
+  flex-grow: 1;
+}
+
+.job-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.job-title {
+  font-size: 1.125rem; /* Equivalent to text-lg */
+  font-weight: 500; /* Equivalent to font-medium */
+}
+
+.job-location {
+  font-size: 0.875rem; /* Equivalent to text-sm */
+  color: #6b7280; /* Equivalent to text-gray-500 */
+}
+
+.job-company {
+  color: #4b5563; /* Equivalent to text-gray-600 */
+}
+
+.job-match {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* Equivalent to gap-1 */
+}
+
+.match-percentage {
+  color: #16a34a; /* Equivalent to text-green-600 */
+  font-weight: 600; /* Equivalent to font-semibold */
+}
+
+.match-icon {
+  width: 1rem; /* Equivalent to w-4 */
+  height: 1rem; /* Equivalent to h-4 */
+}
+
+.match-label {
+  color: #6b7280; /* Equivalent to text-gray-500 */
+  font-size: 0.875rem; /* Equivalent to text-sm */
+}
+
+/* Loading and Error States */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px; /* Equivalent to min-h-[300px] */
+}
+
+.loading-icon, .error-icon {
+  width: 2.5rem; /* Equivalent to w-10 */
+  height: 2.5rem; /* Equivalent to h-10 */
+}
+
+.loading-text, .error-text {
+  color: #1d4ed8; /* Blue color for loading or red for error */
+  font-weight: 500;
+}
+/* ==============Resume AI====================== */
+/* General Styles */
+.resume-container {
+  max-width: 48rem; /* Equivalent to max-w-3xl */
+  margin: 0 auto;
+  padding: 1.5rem; /* Equivalent to p-6 */
+}
+
+.resume-heading {
+  font-size: 1.875rem; /* Equivalent to text-3xl */
+  font-weight: bold;
+  margin-bottom: 0.5rem; /* Equivalent to mb-2 */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Equivalent to gap-2 */
+}
+
+.resume-icon {
+  width: 2rem; /* Equivalent to w-8 */
+  height: 2rem; /* Equivalent to h-8 */
+  color: #3b82f6; /* Equivalent to text-blue-600 */
+}
+
+.resume-description {
+  color: #4b5563; /* Equivalent to text-gray-600 */
+  margin-bottom: 1.5rem; /* Equivalent to mb-6 */
+}
+
+.resume-summary {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* Equivalent to gap-6 */
+  margin-bottom: 2rem; /* Space between summary and the list */
+}
+
+.progress-circle-container {
+  position: relative;
+  width: 6rem;
+  height: 6rem;
+}
+
+.progress-circle {
+  transform: rotate(-90deg);
+}
+
+.resume-percent {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #22c55e; /* Equivalent to text-green-600 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.resume-section-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.resume-section-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-complete-text {
+  color: #22c55e; /* Equivalent to text-green-600 */
+}
+
+.section-incomplete-text {
+  color: #ef4444; /* Equivalent to text-red-500 */
+}
+
+.section-complete-icon, .section-incomplete-icon {
+  width: 1.25rem; /* Equivalent to w-5 */
+  height: 1.25rem; /* Equivalent to h-5 */
+}
+
+.resume-suggestions {
+  margin-top: 2rem;
+}
+
+.suggestions-title {
+  font-weight: 600; /* Equivalent to font-semibold */
+  color: #1f2937; /* Equivalent to text-gray-800 */
+  margin-bottom: 1rem;
+}
+
+.suggestions-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.suggestions-list li {
+  color: #6b7280; /* Equivalent to text-gray-500 */
+  font-size: 1rem;
+}
+
+.font-medium {
+  font-weight: 500; /* Equivalent to font-medium */
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px; /* Equivalent to min-h-[300px] */
+}
+
+.loading-icon, .error-icon {
+  width: 2.5rem; /* Equivalent to w-10 */
+  height: 2.5rem; /* Equivalent to h-10 */
+}
+
+.loading-text, .error-text {
+  color: #1d4ed8; /* Blue color for loading or red for error */
+  font-weight: 500;
+}

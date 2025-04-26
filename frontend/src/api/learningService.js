@@ -86,6 +86,24 @@ const learningService = {
   getLearningTimeStats: async (days = 7) => {
     const response = await apiClient.get(`/module-progress/time_stats/?days=${days}`);
     return response.data;
+  },
+
+  /**
+   * Get job matches for the current user
+   * @returns {Promise} - API response with job matches
+   */
+  getJobMatches: async () => {
+    const response = await apiClient.get('/job-matches/');
+    return response.data;
+  },
+
+  /**
+   * Get resume data for the current user
+   * @returns {Promise} - API response with resume data
+   */
+  getResumeData: async () => {
+    const response = await apiClient.get('/resume/');
+    return response.data;
   }
 };
 

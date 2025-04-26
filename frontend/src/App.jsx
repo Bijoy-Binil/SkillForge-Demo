@@ -9,6 +9,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import LearningPaths from './pages/LearningPaths';
 import LearningPathDetail from './pages/LearningPathDetail';
+import SkillsInProgress from './pages/SkillsInProgress';
+import JobMatches from './pages/JobMatches';
+import ResumeCompleteness from './pages/ResumeCompleteness';
 
 // Test component to verify CSS
 function CssTest() {
@@ -51,9 +54,9 @@ function App() {
               <Route path="/learning" element={<LearningPaths />} />
               <Route path="/learning/:id" element={<LearningPathDetail />} />
               {/* Add more routes as needed */}
-              <Route path="/skills" element={<div className="p-4">Skills page coming soon</div>} />
-              <Route path="/jobs" element={<div className="p-4">Job matches page coming soon</div>} />
-              <Route path="/resume" element={<div className="p-4">Resume page coming soon</div>} />
+              <Route path="/skills" element={<SkillsInProgress />} />
+              <Route path="/jobs" element={<JobMatches />} />
+              <Route path="/resume" element={<ResumeCompleteness />} />
             </Route>
           </Route>
           
