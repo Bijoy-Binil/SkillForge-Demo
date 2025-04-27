@@ -34,6 +34,7 @@ export default function MainLayout() {
     { name: 'Job Matches', href: '/jobs', icon: BriefcaseIcon },
     { name: 'Resume', href: '/resume', icon: DocumentTextIcon },
     { name: 'GitHub Analysis', href: '/github-analysis', icon: CodeBracketIcon },
+    { name: 'Language Charts', href: '/language-charts', icon: BookOpenIcon },
   ];
 
   const handleLogout = () => {

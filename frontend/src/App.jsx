@@ -15,6 +15,7 @@ import JobMatches from './pages/JobMatches';
 import ResumeCompleteness from './pages/ResumeCompleteness';
 import UserProfile from './pages/UserProfile';
 import GithubSkillAnalysis from './pages/GithubSkillAnalysis';
+import LanguageProficiencyCharts from './pages/LanguageProficiencyCharts';
 
 // Test component to verify CSS
 function CssTest() {
@@ -61,6 +62,7 @@ function App() {
               <Route path="/resume" element={<ResumeCompleteness />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/github-analysis" element={<GithubSkillAnalysis />} />
+              <Route path="/language-charts" element={<LanguageProficiencyCharts />} />
             </Route>
           </Route>
           

@@ -25,6 +25,8 @@ from .openai_service import OpenAIService
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.http import HttpResponse
+from weasyprint import HTML
 
 # Create your views here.
 
@@ -690,6 +692,20 @@ class ResumeBuilderView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @action(detail=False, methods=['post'], url_path='export-pdf')
+    def export_pdf(self, request):
+        """Export the provided HTML resume as a PDF."""
+        html_content = request.data.get('html')
+        if not html_content:
+            return Response({'error': 'No HTML content provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            pdf_file = HTML(string=html_content).write_pdf()
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="resume.pdf"'
+            return response
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminLearningPathViewSet(viewsets.ModelViewSet):
