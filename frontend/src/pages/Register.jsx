@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
-
+import './Register.css'
 
 export default function Register() {
   const [formData, setFormData] = useState({

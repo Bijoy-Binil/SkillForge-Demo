@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BookOpenIcon, ClockIcon, ArrowPathIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import learningService from '../api/learningService';
-
+import './SkillsInProgress.css'
 export default function SkillsInProgress() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);

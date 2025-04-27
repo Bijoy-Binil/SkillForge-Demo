@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { UserCircleIcon, ArrowPathIcon, ExclamationCircleIcon, CheckCircleIcon, CodeBracketIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import './GithubSkillAnalysis.css'
 
 export default function GithubSkillAnalysis() {
   const [username, setUsername] = useState('');

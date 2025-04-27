@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
+import './Login.css'
 
 
 export default function Login() {

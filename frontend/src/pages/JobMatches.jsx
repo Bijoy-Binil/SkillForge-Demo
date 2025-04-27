@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BriefcaseIcon, CheckCircleIcon, ArrowPathIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import learningService from '../api/learningService';
-
+import './JobMatches.css'
 export default function JobMatches() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);

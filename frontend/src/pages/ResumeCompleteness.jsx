@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DocumentTextIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import learningService from '../api/learningService';
+import './ResumeCompleteness.css'
 
 const SECTION_KEYS = [
   { key: 'personal_info', label: 'Personal Info' },

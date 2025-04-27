@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 // import './Dashboard.css'; // ← Make sure this matches your file path
-
+import './Dashboard.css'
 const stats = [
   { name: 'Learning Paths', value: '3', href: '/learning', icon: AcademicCapIcon },
   { name: 'Skills in Progress', value: '12', href: '/skills', icon: BookOpenIcon },
