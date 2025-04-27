@@ -35,4 +35,6 @@ urlpatterns = [
     path('admin/learning-modules/', AdminLearningModuleViewSet.as_view({'get': 'list'}), name='admin-learning-modules'),
     path('jobs/<int:job_id>/match/', JobMatchView.as_view(), name='job-match'),
     path('admin/jobs/import/', JobAPIView.as_view(), name='job-import'),
+    path('resume/export-pdf/', ResumeBuilderView.as_view(), name='resume-export-pdf')
+
 ] 

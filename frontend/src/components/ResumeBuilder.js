@@ -39,6 +39,25 @@ const ResumeBuilder = () => {
         `
     });
 
+    const handleExportPDF = async () => {
+        if (!resumeHtml) return;
+        try {
+            const response = await axios.post('/api/resume/export-pdf/', { html: resumeHtml }, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'resume.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            setError('Failed to export PDF. Please try again.');
+            console.error(err);
+        }
+    };
+
     return (
         <div className="resume-builder">
             <div className="card mb-4">
@@ -67,12 +86,21 @@ const ResumeBuilder = () => {
                         </button>
                         
                         {resumeHtml && (
-                            <button 
-                                onClick={handlePrint}
-                                className="no-print"
-                            >
-                                Print/Download
-                            </button>
+                            <>
+                                <button 
+                                    onClick={handlePrint}
+                                    className="no-print"
+                                >
+                                    Print/Download
+                                </button>
+                                <button
+                                    onClick={handleExportPDF}
+                                    className="no-print"
+                                    style={{ marginLeft: '10px' }}
+                                >
+                                    Export as PDF
+                                </button>
+                            </>
                         )}
                     </div>
 

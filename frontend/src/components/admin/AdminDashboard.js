@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -69,6 +69,35 @@ const AdminDashboard = () => {
                             <div key={index} className="badge secondary">{skill}</div>
                         ))}
                     </div>
+                    {metrics.popular_skills_data && metrics.popular_skills_data.length > 0 && (
+                        <div style={{ marginTop: 24 }}>
+                            <Bar
+                                data={{
+                                    labels: metrics.popular_skills_data.map(s => s.name),
+                                    datasets: [
+                                        {
+                                            label: 'Users with Skill',
+                                            data: metrics.popular_skills_data.map(s => s.user_count),
+                                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: {
+                                        legend: { display: false },
+                                        title: { display: true, text: 'Skill Popularity' },
+                                    },
+                                    scales: {
+                                        y: { beginAtZero: true, title: { display: true, text: 'Users' } },
+                                        x: { title: { display: true, text: 'Skill' } },
+                                    },
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

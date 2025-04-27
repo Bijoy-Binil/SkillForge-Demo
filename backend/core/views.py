@@ -760,10 +760,14 @@ class AdminMetricsView(APIView):
         else:
             average_completion_time = 0
         
-        # Get popular skills
-        popular_skills = Skill.objects.annotate(
+        # Get popular skills with counts
+        popular_skills_qs = Skill.objects.annotate(
             user_count=Count('users')
-        ).order_by('-user_count')[:5].values_list('name', flat=True)
+        ).order_by('-user_count')[:5]
+        popular_skills = [s.name for s in popular_skills_qs]
+        popular_skills_data = [
+            {"name": s.name, "user_count": s.user_count} for s in popular_skills_qs
+        ]
         
         # User activity data
         user_activity = {
@@ -779,6 +783,7 @@ class AdminMetricsView(APIView):
             'completed_paths': completed_paths,
             'average_completion_time': average_completion_time,
             'popular_skills': popular_skills,
+            'popular_skills_data': popular_skills_data,
             'user_activity': user_activity
         }
         
