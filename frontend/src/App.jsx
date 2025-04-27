@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
+import ContentManagement from './components/admin/ContentManagement';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -63,6 +64,7 @@ function App() {
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/github-analysis" element={<GithubSkillAnalysis />} />
               <Route path="/language-charts" element={<LanguageProficiencyCharts />} />
+              <Route path="/content-management" element={<ContentManagement />} />
             </Route>
           </Route>
           

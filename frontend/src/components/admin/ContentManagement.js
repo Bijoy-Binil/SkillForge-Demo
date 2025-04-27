@@ -32,12 +32,12 @@ export default function ContentManagement() {
     setError('');
     if (tab === 'paths') {
       axios.get('/api/admin/learning-paths/')
-        .then(res => setPaths(res.data))
+        .then(res => setPaths(Array.isArray(res.data) ? res.data : []))
         .catch(() => setError('Failed to load learning paths.'))
         .finally(() => setLoading(false));
     } else {
       axios.get('/api/admin/learning-modules/')
-        .then(res => setModules(res.data))
+        .then(res => setModules(Array.isArray(res.data) ? res.data : []))
         .catch(() => setError('Failed to load learning modules.'))
         .finally(() => setLoading(false));
     }

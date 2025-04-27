@@ -12,11 +12,11 @@ import ResumeBuilder from '../components/ResumeBuilder';
 import ProgressStats from '../components/ProgressStats';
 import ModuleProgress from '../components/ModuleProgress';
 import LearningPathGenerator from '../components/LearningPathGenerator';
-import AdminDashboard from '../components/admin/AdminDashboard';
+import AdminDashboard from '../components/admin/AdminDashboard'; // Ensure AdminDashboard component exists
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth();  // Make sure useAuth() gives the user object correctly
   const navigate = useNavigate();
   const [showResumeBuilder, setShowResumeBuilder] = useState(false);
   const [showProgressStats, setShowProgressStats] = useState(false);
@@ -27,7 +27,7 @@ export default function MainLayout() {
   const [modules, setModules] = useState([]);
   const [selectedModuleId, setSelectedModuleId] = useState('');
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
     { name: 'Learning Paths', href: '/learning', icon: AcademicCapIcon },
     { name: 'Skills', href: '/skills', icon: BookOpenIcon },
@@ -36,6 +36,15 @@ export default function MainLayout() {
     { name: 'GitHub Analysis', href: '/github-analysis', icon: CodeBracketIcon },
     { name: 'Language Charts', href: '/language-charts', icon: BookOpenIcon },
   ];
+
+  // Conditionally add admin links if user is staff or superuser
+  const navigation = user && (user.is_staff || user.is_superuser)
+    ? [
+        ...baseNavigation,
+        { name: 'Content Management', href: '/content-management', icon: BookOpenIcon },
+        { name: 'Admin Panel', href: '/admin-dashboard', icon: UserCircleIcon },
+      ]
+    : baseNavigation;
 
   const handleLogout = () => {
     logout();
@@ -65,28 +74,17 @@ export default function MainLayout() {
 
   return (
     <div className="layout-container">
+      {/* Mobile Sidebar */}
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog as="div" className="mobile-sidebar-overlay" onClose={setSidebarOpen}>
-          <Transition.Child
-            as={Fragment}
-            enter="overlay-enter"
-            leave="overlay-leave"
-          >
+          <Transition.Child as={Fragment} enter="overlay-enter" leave="overlay-leave">
             <div className="overlay-background" />
           </Transition.Child>
 
           <div className="mobile-sidebar-container">
-            <Transition.Child
-              as={Fragment}
-              enter="sidebar-enter"
-              leave="sidebar-leave"
-            >
+            <Transition.Child as={Fragment} enter="sidebar-enter" leave="sidebar-leave">
               <Dialog.Panel className="mobile-sidebar-panel">
-                <Transition.Child
-                  as={Fragment}
-                  enter="close-button-enter"
-                  leave="close-button-leave"
-                >
+                <Transition.Child as={Fragment} enter="close-button-enter" leave="close-button-leave">
                   <div className="mobile-sidebar-close">
                     <button type="button" onClick={() => setSidebarOpen(false)}>
                       <span className="sr-only">Close sidebar</span>
@@ -94,6 +92,7 @@ export default function MainLayout() {
                     </button>
                   </div>
                 </Transition.Child>
+
                 <div className="mobile-sidebar-content">
                   <div className="sidebar-logo">
                     <Link to="/">
@@ -101,6 +100,7 @@ export default function MainLayout() {
                       <span className="logo-text">SkillForge</span>
                     </Link>
                   </div>
+
                   <nav className="sidebar-nav">
                     <ul className="nav-list">
                       {navigation.map((item) => (
@@ -120,7 +120,7 @@ export default function MainLayout() {
         </Dialog>
       </Transition.Root>
 
-      {/* Desktop sidebar */}
+      {/* Desktop Sidebar */}
       <div className="desktop-sidebar">
         <div className="sidebar-content">
           <div className="sidebar-logo">
@@ -144,26 +144,16 @@ export default function MainLayout() {
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="main-content">
         <div className="top-navbar">
-          <button 
-            type="button" 
-            className="mobile-menu-button"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="menu-icon" />
-          </button>
+          
 
           <div className="user-menu-container">
             <Menu as="div" className="user-menu">
               <Menu.Button className="user-menu-button">
                 {user?.profile_image ? (
-                  <img
-                    className="user-avatar"
-                    src={user.profile_image}
-                    alt="User profile"
-                  />
+                  <img className="user-avatar" src={user.profile_image} alt="User profile" />
                 ) : (
                   <UserCircleIcon className="default-avatar" />
                 )}
@@ -171,28 +161,18 @@ export default function MainLayout() {
                   {user ? `${user.first_name} ${user.last_name}` : 'Loading...'}
                 </span>
               </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter="menu-enter"
-                leave="menu-leave"
-              >
+              <Transition as={Fragment} enter="menu-enter" leave="menu-leave">
                 <Menu.Items className="dropdown-menu">
                   <Menu.Item>
                     {({ active }) => (
-                      <Link
-                        to="/profile"
-                        className={`dropdown-item ${active ? 'active' : ''}`}
-                      >
+                      <Link to="/profile" className={`dropdown-item ${active ? 'active' : ''}`}>
                         Your profile
                       </Link>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
-                      <button
-                        onClick={handleLogout}
-                        className={`dropdown-item ${active ? 'active' : ''}`}
-                      >
+                      <button onClick={handleLogout} className={`dropdown-item ${active ? 'active' : ''}`}>
                         <ArrowRightOnRectangleIcon className="logout-icon" />
                         Sign out
                       </button>
@@ -204,13 +184,16 @@ export default function MainLayout() {
           </div>
         </div>
 
+        {/* Page Content */}
         <main className="content-area">
           <div className="content-container">
+            {/* Display Admin Dashboard if user is admin */}
             {user && (user.is_staff || user.is_superuser) && (
               <div className="mb-4">
                 <AdminDashboard />
               </div>
             )}
+
             <button
               className="btn btn-primary mb-4"
               onClick={() => setShowResumeBuilder((prev) => !prev)}
@@ -218,6 +201,7 @@ export default function MainLayout() {
               {showResumeBuilder ? 'Hide AI Resume Builder' : 'Show AI Resume Builder'}
             </button>
             {showResumeBuilder && <ResumeBuilder />}
+
             <button
               className="btn btn-secondary mb-4"
               onClick={() => setShowProgressStats((prev) => !prev)}
@@ -225,6 +209,7 @@ export default function MainLayout() {
               {showProgressStats ? 'Hide Progress Stats' : 'Show Progress Stats'}
             </button>
             {showProgressStats && <ProgressStats />}
+
             <button
               className="btn btn-secondary mb-4"
               onClick={() => setShowModuleProgress((prev) => !prev)}
@@ -244,6 +229,7 @@ export default function MainLayout() {
                       <option key={path.id} value={path.id}>{path.title}</option>
                     ))}
                   </select>
+
                   <select
                     className="form-select"
                     value={selectedModuleId}
@@ -256,11 +242,13 @@ export default function MainLayout() {
                     ))}
                   </select>
                 </div>
+
                 {selectedPathId && selectedModuleId && (
                   <ModuleProgress moduleId={selectedModuleId} pathId={selectedPathId} />
                 )}
               </div>
             )}
+
             <button
               className="btn btn-secondary mb-4"
               onClick={() => setShowLearningPathGenerator((prev) => !prev)}
@@ -268,8 +256,8 @@ export default function MainLayout() {
               {showLearningPathGenerator ? 'Hide AI Learning Path Generator' : 'Show AI Learning Path Generator'}
             </button>
             {showLearningPathGenerator && <LearningPathGenerator />}
+
             <Outlet />
-            
           </div>
         </main>
       </div>
